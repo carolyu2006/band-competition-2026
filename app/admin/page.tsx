@@ -62,7 +62,7 @@ export default function AdminPage() {
       const parsedCodes = JSON.parse(savedCodes)
       setCodes(parsedCodes)
       setCodesInput(parsedCodes.join("\n"))
-      
+
       // Initialize code statuses
       const savedStatuses = localStorage.getItem("codeStatuses")
       if (savedStatuses) {
@@ -658,33 +658,18 @@ export default function AdminPage() {
                 </div>
                 <div className="text-sm text-zinc-400">
                   <div>
-                    {allowCodeReuse 
-                      ? "代码可以在不同轮次中多次使用" 
+                    {allowCodeReuse
+                      ? "代码可以在不同轮次中多次使用"
                       : "每个代码在每轮中只能使用一次"}
                   </div>
                   <div className="text-xs">
-                    {allowCodeReuse 
-                      ? "Codes can be used multiple times across different rounds" 
+                    {allowCodeReuse
+                      ? "Codes can be used multiple times across different rounds"
                       : "Each code can only be used once per round"}
                   </div>
                 </div>
 
                 <div className="pt-4 border-t border-zinc-700 space-y-4">
-                  <Button
-                    onClick={() => {
-                      localStorage.removeItem("votingData")
-                      localStorage.removeItem("currentCode")
-                      toast({
-                        title: "已重定向投票者",
-                        description: "所有投票者将被重定向到代码输入页面",
-                      })
-                    }}
-                    variant="outline"
-                    className="w-full border-red-700 text-red-400 hover:bg-red-900/30"
-                  >
-                    <div>强制所有投票者重新登录</div>
-                    <div className="text-sm">Force All Voters to Login</div>
-                  </Button>
 
                   <Button
                     onClick={() => {
@@ -707,29 +692,7 @@ export default function AdminPage() {
                     <div className="text-sm">Clear All Cache</div>
                   </Button>
 
-                  <Button
-                    onClick={() => {
-                      localStorage.clear()
-                      localStorage.setItem("competitionEnded", "true")
-                      localStorage.setItem("codes", JSON.stringify([]))
-                      localStorage.setItem("codeStatuses", JSON.stringify({}))
-                      localStorage.setItem("votes", JSON.stringify({}))
-                      localStorage.setItem("rounds", JSON.stringify([
-                        { question: "Which band do you prefer?", options: ["Band A", "Band B"] },
-                        { question: "Which band do you prefer?", options: ["Band A", "Band B"] },
-                        { question: "Which band do you prefer?", options: ["Band A", "Band B"] },
-                      ]))
-                      toast({
-                        title: "比赛已结束",
-                        description: "所有投票者将被重定向到代码输入页面",
-                      })
-                    }}
-                    variant="outline"
-                    className="w-full border-red-700 text-red-400 hover:bg-red-900/30"
-                  >
-                    <div>结束比赛</div>
-                    <div className="text-sm">End Competition</div>
-                  </Button>
+
                 </div>
               </CardContent>
             </Card>
@@ -912,11 +875,10 @@ export default function AdminPage() {
                             <Button
                               onClick={() => toggleCodeStatus(code)}
                               variant="outline"
-                              className={`ml-2 px-2 py-1 text-xs ${
-                                codeStatuses[code]
-                                  ? "border-red-700 text-red-400 hover:bg-red-900/30"
-                                  : "border-green-700 text-green-400 hover:bg-green-900/30"
-                              }`}
+                              className={`ml-2 px-2 py-1 text-xs ${codeStatuses[code]
+                                ? "border-red-700 text-red-400 hover:bg-red-900/30"
+                                : "border-green-700 text-green-400 hover:bg-green-900/30"
+                                }`}
                             >
                               {codeStatuses[code] ? "已使用" : "未使用"}
                             </Button>
