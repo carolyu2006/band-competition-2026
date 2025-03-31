@@ -100,76 +100,51 @@ export default function VotePage() {
 
   const handleCodeSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    const codeInput = code.trim().toUpperCase()
 
-    // Load codes and their statuses
+    // Get code statuses from localStorage
+    const savedStatuses = localStorage.getItem("codeStatuses")
+    const codeStatuses = savedStatuses ? JSON.parse(savedStatuses) : {}
+
+    // Check if code exists and is valid
     const savedCodes = localStorage.getItem("codes")
-    const savedCodeStatuses = localStorage.getItem("codeStatuses")
-    const savedReuseSetting = localStorage.getItem("allowCodeReuse")
+    const codes = savedCodes ? JSON.parse(savedCodes) : []
+    const codeIndex = codes.indexOf(codeInput)
 
-    console.log("Validating code:", code)
-    console.log("Saved codes:", savedCodes)
-    console.log("Code statuses:", savedCodeStatuses)
-    console.log("Allow reuse:", savedReuseSetting)
-
-    if (!savedCodes || !savedCodeStatuses) {
-      console.log("Missing codes or statuses")
+    if (codeIndex === -1) {
       toast({
-        title: "Error",
-        description: "Voting system is not properly initialized",
-        variant: "destructive",
-      })
-      return
-    }
-
-    const codes = JSON.parse(savedCodes)
-    const codeStatuses = JSON.parse(savedCodeStatuses)
-    const allowCodeReuse = savedReuseSetting ? JSON.parse(savedReuseSetting) : false
-
-    console.log("Parsed codes:", codes)
-    console.log("Parsed statuses:", codeStatuses)
-    console.log("Allow reuse:", allowCodeReuse)
-
-    // Check if code exists
-    if (!codes.includes(code)) {
-      console.log("Invalid code")
-      toast({
-        title: "Invalid code",
-        description: "Please enter a valid voting code",
+        title: "无效代码",
+        description: "请输入有效的投票码",
         variant: "destructive",
       })
       return
     }
 
     // Check if code is already used
-    if (codeStatuses[code] && !allowCodeReuse) {
-      console.log("Code already used")
+    if (codeStatuses[codeInput]) {
       toast({
-        title: "Code already used",
-        description: "This code has already been used in this round",
+        title: "代码已使用",
+        description: "此代码已在本轮中使用过",
         variant: "destructive",
       })
       return
     }
 
-    console.log("Code accepted")
-    // Save current code
-    setCode(code)
-    localStorage.setItem("currentCode", code)
-
-    // Always go to waiting state first
+    // Save the current code
+    localStorage.setItem("currentCode", codeInput)
     setStatus("waiting")
-
+    
     toast({
-      title: "Code accepted",
-      description: "Please wait for voting to start",
+      title: "代码已接受",
+      description: "等待投票开始",
     })
   }
 
   const handleSubmit = () => {
     if (selectedOption === null) {
       toast({
-        title: "No selection made",
-        description: "Please select an option before submitting",
+        title: "未选择选项",
+        description: "请在提交前选择一个选项",
         variant: "destructive",
       })
       return
@@ -190,36 +165,67 @@ export default function VotePage() {
     // Save updated votes
     localStorage.setItem("votes", JSON.stringify(votes))
 
+    // Mark code as used
+    const savedCode = localStorage.getItem("currentCode")
+    if (savedCode) {
+      const savedStatuses = localStorage.getItem("codeStatuses")
+      const codeStatuses = savedStatuses ? JSON.parse(savedStatuses) : {}
+      codeStatuses[savedCode] = true
+      localStorage.setItem("codeStatuses", JSON.stringify(codeStatuses))
+    }
+
     setStatus("completed")
     toast({
-      title: "Vote submitted",
-      description: "Thank you for voting!",
+      title: "投票已提交",
+      description: "感谢您的投票！",
     })
   }
 
+  // Check for competition end
+  useEffect(() => {
+    const competitionEnded = localStorage.getItem("competitionEnded")
+    if (competitionEnded === "true") {
+      localStorage.removeItem("currentCode")
+      setStatus("login")
+      setCode("")
+      toast({
+        title: "比赛已结束",
+        description: "投票已结束，感谢参与",
+        variant: "destructive",
+      })
+    }
+  }, [])
+
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-zinc-900 border-purple-700 shadow-lg p-6">
-        <h1 className="text-2xl font-bold text-center text-purple-400 mb-6">Band Competition Voting</h1>
+      <Card className="w-full max-w-md bg-zinc-900 border-purple-700 shadow-lg p-4 md:p-6">
+        <h1 className="text-xl md:text-2xl font-bold text-center text-purple-400 mb-4 md:mb-6">
+          <div>乐队比赛投票</div>
+          <div className="text-base md:text-lg text-zinc-400">Band Competition Voting</div>
+        </h1>
 
         {status === "login" && (
           <form onSubmit={handleCodeSubmit} className="space-y-4">
             <div>
               <label htmlFor="code" className="block text-sm font-medium text-zinc-300 mb-1">
-                Enter your voting code
+                <div>输入投票码</div>
+                <div className="text-xs text-zinc-400">Enter your voting code</div>
               </label>
               <Input
                 id="code"
                 type="text"
                 value={code}
-                onChange={(e) => setCode(e.target.value)}
-                className="bg-zinc-800 border-purple-700 text-white"
-                placeholder="Enter your code"
+                onChange={(e) => setCode(e.target.value.toUpperCase())}
+                className="bg-zinc-800 border-purple-700 text-white text-lg tracking-wider"
+                placeholder="输入您的代码"
                 required
+                autoCapitalize="characters"
+                autoComplete="off"
               />
             </div>
-            <Button type="submit" className="w-full bg-purple-700 hover:bg-purple-800 text-white">
-              Submit Code
+            <Button type="submit" className="w-full bg-purple-700 hover:bg-purple-800 text-white py-6">
+              <div>提交代码</div>
+              <div className="text-sm">Submit Code</div>
             </Button>
           </form>
         )}
@@ -229,21 +235,31 @@ export default function VotePage() {
             <div className="animate-pulse mb-4">
               <div className="h-12 w-12 rounded-full bg-purple-700 mx-auto"></div>
             </div>
-            <h2 className="text-xl font-semibold text-purple-400 mb-2">Waiting for voting to start</h2>
-            <p className="text-zinc-400">The manager will start the next round soon</p>
+            <h2 className="text-lg md:text-xl font-semibold text-purple-400 mb-2">
+              <div>等待投票开始</div>
+              <div className="text-sm text-zinc-400">Waiting for voting to start</div>
+            </h2>
+            <p className="text-zinc-400">
+              <div>管理员将很快开始下一轮</div>
+              <div className="text-sm">The manager will start the next round soon</div>
+            </p>
           </div>
         )}
 
         {status === "voting" && (
           <div className="space-y-6">
             <div className="bg-purple-900/50 rounded-lg p-3 text-center">
-              <div className="text-sm text-purple-300 mb-1">Time Remaining</div>
+              <div className="text-sm text-purple-300 mb-1">
+                <div>剩余时间</div>
+                <div className="text-xs">Time Remaining</div>
+              </div>
               <div className="text-2xl font-bold text-white">{timeLeft} seconds</div>
             </div>
 
             <div className="mb-4">
-              <h2 className="text-xl font-semibold text-purple-400 mb-3">
-                Round {currentRound + 1}: {question}
+              <h2 className="text-lg md:text-xl font-semibold text-purple-400 mb-3">
+                <div>第 {currentRound + 1} 轮: {question}</div>
+                <div className="text-sm text-zinc-400">Round {currentRound + 1}: {question}</div>
               </h2>
 
               <div className="space-y-3 mt-4">
@@ -259,13 +275,13 @@ export default function VotePage() {
                   >
                     <div className="flex items-center">
                       <div
-                        className={`w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center ${
+                        className={`w-6 h-6 rounded-full border-2 mr-3 flex items-center justify-center ${
                           selectedOption === index ? "border-purple-500" : "border-zinc-500"
                         }`}
                       >
-                        {selectedOption === index && <div className="w-3 h-3 rounded-full bg-purple-500"></div>}
+                        {selectedOption === index && <div className="w-4 h-4 rounded-full bg-purple-500"></div>}
                       </div>
-                      <span className="text-white">{option}</span>
+                      <span className="text-white text-lg">{option}</span>
                     </div>
                   </div>
                 ))}
@@ -274,10 +290,11 @@ export default function VotePage() {
 
             <Button
               onClick={handleSubmit}
-              className="w-full bg-purple-700 hover:bg-purple-800 text-white py-3 h-auto"
+              className="w-full bg-purple-700 hover:bg-purple-800 text-white py-6 h-auto"
               disabled={selectedOption === null}
             >
-              Submit Vote
+              <div>提交投票</div>
+              <div className="text-sm">Submit Vote</div>
             </Button>
           </div>
         )}
@@ -301,8 +318,14 @@ export default function VotePage() {
                 <polyline points="22 4 12 14.01 9 11.01" />
               </svg>
             </div>
-            <h2 className="text-xl font-semibold text-purple-400 mb-2">Vote Submitted!</h2>
-            <p className="text-zinc-400">Thank you for participating in the voting</p>
+            <h2 className="text-lg md:text-xl font-semibold text-purple-400 mb-2">
+              <div>投票已提交！</div>
+              <div className="text-sm text-zinc-400">Vote Submitted!</div>
+            </h2>
+            <p className="text-zinc-400">
+              <div>感谢您参与投票</div>
+              <div className="text-sm">Thank you for participating in the voting</div>
+            </p>
           </div>
         )}
       </Card>

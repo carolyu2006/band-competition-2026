@@ -58,16 +58,13 @@ export default function AdminPage() {
 
     // Load saved codes if they exist
     const savedCodes = localStorage.getItem("codes")
-    console.log("Loading saved codes:", savedCodes)
     if (savedCodes) {
       const parsedCodes = JSON.parse(savedCodes)
-      console.log("Parsed codes:", parsedCodes)
       setCodes(parsedCodes)
       setCodesInput(parsedCodes.join("\n"))
       
       // Initialize code statuses
       const savedStatuses = localStorage.getItem("codeStatuses")
-      console.log("Loading saved statuses:", savedStatuses)
       if (savedStatuses) {
         setCodeStatuses(JSON.parse(savedStatuses))
       } else {
@@ -76,7 +73,6 @@ export default function AdminPage() {
           acc[code] = false
           return acc
         }, {})
-        console.log("Initializing new statuses:", initialStatuses)
         setCodeStatuses(initialStatuses)
         localStorage.setItem("codeStatuses", JSON.stringify(initialStatuses))
       }
@@ -339,17 +335,8 @@ export default function AdminPage() {
       return
     }
 
-    console.log("Saving codes:", codeList)
     setCodes(codeList)
     localStorage.setItem("codes", JSON.stringify(codeList))
-
-    // Initialize code statuses for new codes
-    const newStatuses = codeList.reduce((acc: { [key: string]: boolean }, code: string) => {
-      acc[code] = false
-      return acc
-    }, {})
-    setCodeStatuses(newStatuses)
-    localStorage.setItem("codeStatuses", JSON.stringify(newStatuses))
 
     toast({
       title: "Codes saved",
@@ -396,13 +383,17 @@ export default function AdminPage() {
       <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4">
         <Card className="w-full max-w-md bg-zinc-900 border-purple-700">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center text-purple-400">Manager Login</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center text-purple-400">
+              <div>管理员登录</div>
+              <div className="text-lg text-zinc-400">Manager Login</div>
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-zinc-300 mb-1">
-                  Password
+                  <div>密码</div>
+                  <div className="text-xs text-zinc-400">Password</div>
                 </label>
                 <Input
                   id="password"
@@ -410,12 +401,13 @@ export default function AdminPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="bg-zinc-800 border-purple-700 text-white"
-                  placeholder="Enter password"
+                  placeholder="输入密码"
                   required
                 />
               </div>
               <Button type="submit" className="w-full bg-purple-700 hover:bg-purple-800 text-white">
-                Login
+                <div>登录</div>
+                <div className="text-sm">Login</div>
               </Button>
             </form>
           </CardContent>
@@ -433,22 +425,29 @@ export default function AdminPage() {
             variant="outline"
             className="border-purple-700 text-purple-400 hover:bg-purple-900"
           >
-            ← Back
+            <div>返回</div>
+            <div className="text-sm">← Back</div>
           </Button>
-          <h1 className="text-3xl font-bold text-purple-400">Band Competition Manager Dashboard</h1>
-          <div className="w-20"></div> {/* Spacer for alignment */}
+          <h1 className="text-3xl font-bold text-purple-400">
+            <div>乐队比赛管理面板</div>
+            <div className="text-lg text-zinc-400">Band Competition Manager Dashboard</div>
+          </h1>
+          <div className="w-20"></div>
         </div>
 
         <Tabs defaultValue="control" className="space-y-6">
           <TabsList className="bg-zinc-900 border-b border-purple-700">
             <TabsTrigger value="control" className="data-[state=active]:bg-purple-900 data-[state=active]:text-white">
-              Control Panel
+              <div>控制面板</div>
+              <div className="text-sm">Control Panel</div>
             </TabsTrigger>
             <TabsTrigger value="results" className="data-[state=active]:bg-purple-900 data-[state=active]:text-white">
-              Results
+              <div>结果</div>
+              <div className="text-sm">Results</div>
             </TabsTrigger>
             <TabsTrigger value="codes" className="data-[state=active]:bg-purple-900 data-[state=active]:text-white">
-              Voting Codes
+              <div>投票码</div>
+              <div className="text-sm">Voting Codes</div>
             </TabsTrigger>
           </TabsList>
 
@@ -456,12 +455,18 @@ export default function AdminPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card className="bg-zinc-900 border-purple-700">
                 <CardHeader>
-                  <CardTitle className="text-purple-400">Voting Control</CardTitle>
+                  <CardTitle className="text-purple-400">
+                    <div>投票控制</div>
+                    <div className="text-lg text-zinc-400">Voting Control</div>
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between bg-zinc-800 p-4 rounded-lg">
                     <div>
-                      <p className="text-zinc-400 text-sm">Current Round</p>
+                      <p className="text-zinc-400 text-sm">
+                        <div>当前轮次</div>
+                        <div className="text-xs">Current Round</div>
+                      </p>
                       <p className="text-xl font-bold text-white">{currentRound + 1} of 3</p>
                     </div>
                     <div className="flex space-x-2">
@@ -471,7 +476,8 @@ export default function AdminPage() {
                         className="border-purple-700 text-purple-400 hover:bg-purple-900"
                         disabled={currentRound === 0 || isVotingActive}
                       >
-                        Previous
+                        <div>上一轮</div>
+                        <div className="text-sm">Previous</div>
                       </Button>
                       <Button
                         onClick={nextRound}
@@ -479,13 +485,17 @@ export default function AdminPage() {
                         className="border-purple-700 text-purple-400 hover:bg-purple-900"
                         disabled={currentRound === 2 || isVotingActive}
                       >
-                        Next
+                        <div>下一轮</div>
+                        <div className="text-sm">Next</div>
                       </Button>
                     </div>
                   </div>
 
                   <div className="bg-zinc-800 p-4 rounded-lg">
-                    <p className="text-zinc-400 text-sm mb-2">Voting Timer (seconds)</p>
+                    <p className="text-zinc-400 text-sm mb-2">
+                      <div>投票计时器（秒）</div>
+                      <div className="text-xs">Voting Timer (seconds)</div>
+                    </p>
                     <div className="flex items-center space-x-2">
                       <Input
                         type="number"
@@ -503,11 +513,13 @@ export default function AdminPage() {
                   <div className="flex space-x-3">
                     {isVotingActive ? (
                       <Button onClick={endVoting} className="flex-1 bg-red-700 hover:bg-red-800 text-white">
-                        End Voting
+                        <div>结束投票</div>
+                        <div className="text-sm">End Voting</div>
                       </Button>
                     ) : (
                       <Button onClick={startVoting} className="flex-1 bg-purple-700 hover:bg-purple-800 text-white">
-                        Start Voting
+                        <div>开始投票</div>
+                        <div className="text-sm">Start Voting</div>
                       </Button>
                     )}
                     <Button
@@ -516,7 +528,8 @@ export default function AdminPage() {
                       className="border-red-700 text-red-400 hover:bg-red-900/30"
                       disabled={isVotingActive}
                     >
-                      Reset Votes
+                      <div>重置投票</div>
+                      <div className="text-sm">Reset Votes</div>
                     </Button>
                   </div>
                 </CardContent>
@@ -524,38 +537,50 @@ export default function AdminPage() {
 
               <Card className="bg-zinc-900 border-purple-700">
                 <CardHeader>
-                  <CardTitle className="text-purple-400">Question Setup</CardTitle>
+                  <CardTitle className="text-purple-400">
+                    <div>问题设置</div>
+                    <div className="text-lg text-zinc-400">Question Setup</div>
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-zinc-400 mb-1">Question</label>
+                    <label className="block text-sm font-medium text-zinc-400 mb-1">
+                      <div>问题</div>
+                      <div className="text-xs">Question</div>
+                    </label>
                     <Input
                       value={rounds[currentRound].question}
                       onChange={(e) => updateQuestion(currentRound, e.target.value)}
                       className="bg-zinc-800 border-purple-700 text-white"
-                      placeholder="Enter question"
+                      placeholder="输入问题"
                       disabled={isVotingActive}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-zinc-400 mb-1">Option 1</label>
+                    <label className="block text-sm font-medium text-zinc-400 mb-1">
+                      <div>选项 1</div>
+                      <div className="text-xs">Option 1</div>
+                    </label>
                     <Input
                       value={rounds[currentRound].options[0]}
                       onChange={(e) => updateOption(currentRound, 0, e.target.value)}
                       className="bg-zinc-800 border-purple-700 text-white"
-                      placeholder="Enter first option"
+                      placeholder="输入第一个选项"
                       disabled={isVotingActive}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-zinc-400 mb-1">Option 2</label>
+                    <label className="block text-sm font-medium text-zinc-400 mb-1">
+                      <div>选项 2</div>
+                      <div className="text-xs">Option 2</div>
+                    </label>
                     <Input
                       value={rounds[currentRound].options[1]}
                       onChange={(e) => updateOption(currentRound, 1, e.target.value)}
                       className="bg-zinc-800 border-purple-700 text-white"
-                      placeholder="Enter second option"
+                      placeholder="输入第二个选项"
                       disabled={isVotingActive}
                     />
                   </div>
@@ -574,14 +599,15 @@ export default function AdminPage() {
                           }),
                         )
                         toast({
-                          title: "Question updated",
-                          description: "The question and options have been updated",
+                          title: "问题已更新",
+                          description: "问题和选项已更新",
                         })
                       }}
                       className="w-full bg-purple-700 hover:bg-purple-800 text-white"
                       disabled={isVotingActive}
                     >
-                      Update Question
+                      <div>更新问题</div>
+                      <div className="text-sm">Update Question</div>
                     </Button>
                   </div>
                 </CardContent>
@@ -590,62 +616,119 @@ export default function AdminPage() {
 
             <Card className="bg-zinc-900 border-purple-700">
               <CardHeader>
-                <CardTitle className="text-purple-400">QR Code</CardTitle>
+                <CardTitle className="text-purple-400">
+                  <div>二维码</div>
+                  <div className="text-lg text-zinc-400">QR Code</div>
+                </CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col items-center">
                 <div className="bg-white p-4 rounded-lg mb-4">
                   <QRCodeSVG value={baseUrl} size={200} />
                 </div>
-                <p className="text-zinc-400 text-sm text-center">Scan this QR code to access the voting page</p>
+                <p className="text-zinc-400 text-sm text-center">
+                  <div>扫描此二维码访问投票页面</div>
+                  <div className="text-xs">Scan this QR code to access the voting page</div>
+                </p>
                 <p className="text-purple-400 mt-2 text-center font-mono">{baseUrl}</p>
               </CardContent>
             </Card>
 
             <Card className="bg-zinc-900 border-purple-700">
               <CardHeader>
-                <CardTitle className="text-purple-400">Voting Settings</CardTitle>
+                <CardTitle className="text-purple-400">
+                  <div>投票设置</div>
+                  <div className="text-lg text-zinc-400">Voting Settings</div>
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-zinc-300">Allow Code Reuse</label>
+                  <label className="text-sm font-medium text-zinc-300">
+                    <div>允许代码重用</div>
+                    <div className="text-xs text-zinc-400">Allow Code Reuse</div>
+                  </label>
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm text-zinc-400">{allowCodeReuse ? "Yes" : "No"}</span>
+                    <span className="text-sm text-zinc-400">{allowCodeReuse ? "是" : "否"}</span>
                     <Button
                       onClick={() => setAllowCodeReuse(!allowCodeReuse)}
                       className="bg-purple-700 hover:bg-purple-800 text-white"
                     >
-                      {allowCodeReuse ? "Disable" : "Enable"}
+                      {allowCodeReuse ? "禁用" : "启用"}
                     </Button>
                   </div>
                 </div>
                 <div className="text-sm text-zinc-400">
-                  {allowCodeReuse 
-                    ? "Codes can be used multiple times across different rounds" 
-                    : "Each code can only be used once per round"}
+                  <div>
+                    {allowCodeReuse 
+                      ? "代码可以在不同轮次中多次使用" 
+                      : "每个代码在每轮中只能使用一次"}
+                  </div>
+                  <div className="text-xs">
+                    {allowCodeReuse 
+                      ? "Codes can be used multiple times across different rounds" 
+                      : "Each code can only be used once per round"}
+                  </div>
                 </div>
 
                 <div className="pt-4 border-t border-zinc-700 space-y-4">
                   <Button
                     onClick={() => {
-                      // Clear all localStorage data
+                      localStorage.removeItem("votingData")
+                      localStorage.removeItem("currentCode")
+                      toast({
+                        title: "已重定向投票者",
+                        description: "所有投票者将被重定向到代码输入页面",
+                      })
+                    }}
+                    variant="outline"
+                    className="w-full border-red-700 text-red-400 hover:bg-red-900/30"
+                  >
+                    <div>强制所有投票者重新登录</div>
+                    <div className="text-sm">Force All Voters to Login</div>
+                  </Button>
+
+                  <Button
+                    onClick={() => {
                       localStorage.clear()
-                      // Reset code statuses
                       const newStatuses: Record<string, boolean> = {}
                       codes.forEach((code) => {
                         newStatuses[code] = false
                       })
                       localStorage.setItem("codeStatuses", JSON.stringify(newStatuses))
-                      // Reset votes
                       localStorage.setItem("votes", JSON.stringify({}))
                       toast({
-                        title: "Cache cleared",
-                        description: "All data has been reset",
+                        title: "缓存已清除",
+                        description: "所有数据已重置",
                       })
                     }}
                     variant="outline"
                     className="w-full border-yellow-700 text-yellow-400 hover:bg-yellow-900/30"
                   >
-                    Clear All Cache
+                    <div>清除所有缓存</div>
+                    <div className="text-sm">Clear All Cache</div>
+                  </Button>
+
+                  <Button
+                    onClick={() => {
+                      localStorage.clear()
+                      localStorage.setItem("competitionEnded", "true")
+                      localStorage.setItem("codes", JSON.stringify([]))
+                      localStorage.setItem("codeStatuses", JSON.stringify({}))
+                      localStorage.setItem("votes", JSON.stringify({}))
+                      localStorage.setItem("rounds", JSON.stringify([
+                        { question: "Which band do you prefer?", options: ["Band A", "Band B"] },
+                        { question: "Which band do you prefer?", options: ["Band A", "Band B"] },
+                        { question: "Which band do you prefer?", options: ["Band A", "Band B"] },
+                      ]))
+                      toast({
+                        title: "比赛已结束",
+                        description: "所有投票者将被重定向到代码输入页面",
+                      })
+                    }}
+                    variant="outline"
+                    className="w-full border-red-700 text-red-400 hover:bg-red-900/30"
+                  >
+                    <div>结束比赛</div>
+                    <div className="text-sm">End Competition</div>
                   </Button>
                 </div>
               </CardContent>
@@ -655,7 +738,10 @@ export default function AdminPage() {
           <TabsContent value="results">
             <Card className="bg-zinc-900 border-purple-700">
               <CardHeader>
-                <CardTitle className="text-purple-400">Voting Results</CardTitle>
+                <CardTitle className="text-purple-400">
+                  <div>投票结果</div>
+                  <div className="text-lg text-zinc-400">Voting Results</div>
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <Tabs defaultValue="round1">
@@ -664,19 +750,22 @@ export default function AdminPage() {
                       value="round1"
                       className="data-[state=active]:bg-purple-900 data-[state=active]:text-white"
                     >
-                      Round 1
+                      <div>第一轮</div>
+                      <div className="text-sm">Round 1</div>
                     </TabsTrigger>
                     <TabsTrigger
                       value="round2"
                       className="data-[state=active]:bg-purple-900 data-[state=active]:text-white"
                     >
-                      Round 2
+                      <div>第二轮</div>
+                      <div className="text-sm">Round 2</div>
                     </TabsTrigger>
                     <TabsTrigger
                       value="round3"
                       className="data-[state=active]:bg-purple-900 data-[state=active]:text-white"
                     >
-                      Round 3
+                      <div>第三轮</div>
+                      <div className="text-sm">Round 3</div>
                     </TabsTrigger>
                   </TabsList>
 
@@ -710,19 +799,25 @@ export default function AdminPage() {
 
                       <div className="mt-4 grid grid-cols-2 gap-4">
                         <div className="bg-zinc-800 p-3 rounded-lg">
-                          <p className="text-zinc-400 text-sm">Total Votes</p>
+                          <p className="text-zinc-400 text-sm">
+                            <div>总投票数</div>
+                            <div className="text-xs">Total Votes</div>
+                          </p>
                           <p className="text-xl font-bold text-white">
                             {votes[round] ? votes[round][0] + votes[round][1] : 0}
                           </p>
                         </div>
                         <div className="bg-zinc-800 p-3 rounded-lg">
-                          <p className="text-zinc-400 text-sm">Leading Option</p>
+                          <p className="text-zinc-400 text-sm">
+                            <div>领先选项</div>
+                            <div className="text-xs">Leading Option</div>
+                          </p>
                           <p className="text-xl font-bold text-purple-400">
                             {votes[round] && votes[round][0] !== votes[round][1]
                               ? votes[round][0] > votes[round][1]
                                 ? rounds[round].options[0]
                                 : rounds[round].options[1]
-                              : "Tie"}
+                              : "平局"}
                           </p>
                         </div>
                       </div>
@@ -731,7 +826,8 @@ export default function AdminPage() {
                 </Tabs>
 
                 <Button onClick={exportResults} className="mt-32 bg-purple-700 hover:bg-purple-800 text-white">
-                  Export Results
+                  <div>导出结果</div>
+                  <div className="text-sm">Export Results</div>
                 </Button>
               </CardContent>
             </Card>
@@ -740,29 +836,33 @@ export default function AdminPage() {
           <TabsContent value="codes">
             <Card className="bg-zinc-900 border-purple-700">
               <CardHeader>
-                <CardTitle className="text-purple-400">Voting Codes</CardTitle>
+                <CardTitle className="text-purple-400">
+                  <div>投票码</div>
+                  <div className="text-lg text-zinc-400">Voting Codes</div>
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="mb-4">
                   <p className="text-zinc-400 mb-2">
-                    Enter your voting codes below, one code per line. You need to save the codes after making changes.
+                    <div>在下方输入投票码，每行一个。更改后需要保存。</div>
+                    <div className="text-sm">Enter your voting codes below, one code per line. You need to save the codes after making changes.</div>
                   </p>
 
                   <Textarea
                     value={codesInput}
                     onChange={(e) => setCodesInput(e.target.value)}
                     className="bg-zinc-800 border-purple-700 text-white h-40 font-mono"
-                    placeholder="Enter voting codes, one per line"
+                    placeholder="输入投票码，每行一个"
                   />
 
                   <div className="flex space-x-3 mt-3">
                     <Button onClick={saveCodes} className="bg-purple-700 hover:bg-purple-800 text-white">
-                      Save Codes
+                      <div>保存代码</div>
+                      <div className="text-sm">Save Codes</div>
                     </Button>
 
                     <Button
                       onClick={() => {
-                        // Generate 150 random codes
                         const newCodes = Array.from({ length: 150 }, () =>
                           Math.random().toString(36).substring(2, 8).toUpperCase(),
                         )
@@ -771,20 +871,25 @@ export default function AdminPage() {
                       variant="outline"
                       className="border-purple-700 text-purple-400 hover:bg-purple-900"
                     >
-                      Generate 150 Random Codes
+                      <div>生成150个随机代码</div>
+                      <div className="text-sm">Generate 150 Random Codes</div>
                     </Button>
                   </div>
                 </div>
 
                 <div className="mt-6">
                   <div className="flex justify-between items-center mb-3">
-                    <h3 className="text-lg font-medium text-purple-400">Current Codes ({codes.length})</h3>
+                    <h3 className="text-lg font-medium text-purple-400">
+                      <div>当前代码 ({codes.length})</div>
+                      <div className="text-sm text-zinc-400">Current Codes ({codes.length})</div>
+                    </h3>
                     <Button
                       onClick={resetAllCodes}
                       variant="outline"
                       className="border-purple-700 text-purple-400 hover:bg-purple-900"
                     >
-                      Reset All Codes
+                      <div>重置所有代码</div>
+                      <div className="text-sm">Reset All Codes</div>
                     </Button>
                   </div>
 
@@ -813,40 +918,42 @@ export default function AdminPage() {
                                   : "border-green-700 text-green-400 hover:bg-green-900/30"
                               }`}
                             >
-                              {codeStatuses[code] ? "Used" : "Unused"}
+                              {codeStatuses[code] ? "已使用" : "未使用"}
                             </Button>
                           </div>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-zinc-500 italic">No codes have been saved yet.</p>
+                    <p className="text-zinc-500 italic">
+                      <div>尚未保存任何代码</div>
+                      <div className="text-sm">No codes have been saved yet</div>
+                    </p>
                   )}
 
                   <Button
                     onClick={() => {
                       if (codes.length === 0) {
                         toast({
-                          title: "No codes to copy",
-                          description: "Please save some codes first",
+                          title: "没有可复制的代码",
+                          description: "请先保存一些代码",
                           variant: "destructive",
                         })
                         return
                       }
 
-                      // Copy codes to clipboard
                       navigator.clipboard
                         .writeText(codes.join("\n"))
                         .then(() => {
                           toast({
-                            title: "Codes copied",
-                            description: "All voting codes have been copied to clipboard",
+                            title: "代码已复制",
+                            description: "所有投票码已复制到剪贴板",
                           })
                         })
                         .catch(() => {
                           toast({
-                            title: "Failed to copy",
-                            description: "Could not copy codes to clipboard",
+                            title: "复制失败",
+                            description: "无法复制代码到剪贴板",
                             variant: "destructive",
                           })
                         })
@@ -854,7 +961,8 @@ export default function AdminPage() {
                     className="mt-4 bg-purple-700 hover:bg-purple-800 text-white"
                     disabled={codes.length === 0}
                   >
-                    Copy All Codes
+                    <div>复制所有代码</div>
+                    <div className="text-sm">Copy All Codes</div>
                   </Button>
                 </div>
               </CardContent>
