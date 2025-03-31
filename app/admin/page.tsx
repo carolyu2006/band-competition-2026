@@ -19,12 +19,17 @@ export default function AdminPage() {
   const [isVotingActive, setIsVotingActive] = useState(false)
   const [timeLeft, setTimeLeft] = useState(60)
   const [initialTime, setInitialTime] = useState(60)
-  const [question, setQuestion] = useState("Which band do you prefer?")
-  const [options, setOptions] = useState(["Band A", "Band B"])
+  const [rounds, setRounds] = useState([
+    { question: "Which band do you prefer?", options: ["Band A", "Band B"] },
+    { question: "Which band do you prefer?", options: ["Band A", "Band B"] },
+    { question: "Which band do you prefer?", options: ["Band A", "Band B"] },
+  ])
   const [votes, setVotes] = useState<number[][]>([])
   const [codes, setCodes] = useState<string[]>([])
   const [codesInput, setCodesInput] = useState("")
   const [baseUrl, setBaseUrl] = useState("")
+  const [allowCodeReuse, setAllowCodeReuse] = useState(false)
+  const [codeStatuses, setCodeStatuses] = useState<{ [key: string]: boolean }>({})
   const { toast } = useToast()
 
   // Initialize data
@@ -45,12 +50,42 @@ export default function AdminPage() {
       ])
     }
 
+    // Load saved rounds if they exist
+    const savedRounds = localStorage.getItem("rounds")
+    if (savedRounds) {
+      setRounds(JSON.parse(savedRounds))
+    }
+
     // Load saved codes if they exist
     const savedCodes = localStorage.getItem("codes")
+    console.log("Loading saved codes:", savedCodes)
     if (savedCodes) {
       const parsedCodes = JSON.parse(savedCodes)
+      console.log("Parsed codes:", parsedCodes)
       setCodes(parsedCodes)
       setCodesInput(parsedCodes.join("\n"))
+      
+      // Initialize code statuses
+      const savedStatuses = localStorage.getItem("codeStatuses")
+      console.log("Loading saved statuses:", savedStatuses)
+      if (savedStatuses) {
+        setCodeStatuses(JSON.parse(savedStatuses))
+      } else {
+        // Initialize all codes as unused
+        const initialStatuses = parsedCodes.reduce((acc: { [key: string]: boolean }, code: string) => {
+          acc[code] = false
+          return acc
+        }, {})
+        console.log("Initializing new statuses:", initialStatuses)
+        setCodeStatuses(initialStatuses)
+        localStorage.setItem("codeStatuses", JSON.stringify(initialStatuses))
+      }
+    }
+
+    // Load code reuse setting
+    const savedReuseSetting = localStorage.getItem("allowCodeReuse")
+    if (savedReuseSetting !== null) {
+      setAllowCodeReuse(JSON.parse(savedReuseSetting))
     }
 
     // Check if already authenticated in this session
@@ -59,6 +94,11 @@ export default function AdminPage() {
       setIsAuthenticated(true)
     }
   }, [])
+
+  // Save code statuses when they change
+  useEffect(() => {
+    localStorage.setItem("codeStatuses", JSON.stringify(codeStatuses))
+  }, [codeStatuses])
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
@@ -92,8 +132,8 @@ export default function AdminPage() {
         JSON.stringify({
           isActive: isVotingActive,
           currentRound,
-          question,
-          options,
+          question: rounds[currentRound].question,
+          options: rounds[currentRound].options,
           timeLeft: timeLeft - 1,
         }),
       )
@@ -116,8 +156,8 @@ export default function AdminPage() {
       JSON.stringify({
         isActive: true,
         currentRound,
-        question,
-        options,
+        question: rounds[currentRound].question,
+        options: rounds[currentRound].options,
         timeLeft: initialTime,
       }),
     )
@@ -137,8 +177,8 @@ export default function AdminPage() {
       JSON.stringify({
         isActive: false,
         currentRound,
-        question,
-        options,
+        question: rounds[currentRound].question,
+        options: rounds[currentRound].options,
         timeLeft: 0,
       }),
     )
@@ -197,10 +237,18 @@ export default function AdminPage() {
     }
   }
 
-  const updateOption = (index: number, value: string) => {
-    const newOptions = [...options]
-    newOptions[index] = value
-    setOptions(newOptions)
+  const updateOption = (roundIndex: number, optionIndex: number, value: string) => {
+    const newRounds = [...rounds]
+    newRounds[roundIndex].options[optionIndex] = value
+    setRounds(newRounds)
+    localStorage.setItem("rounds", JSON.stringify(newRounds))
+  }
+
+  const updateQuestion = (roundIndex: number, value: string) => {
+    const newRounds = [...rounds]
+    newRounds[roundIndex].question = value
+    setRounds(newRounds)
+    localStorage.setItem("rounds", JSON.stringify(newRounds))
   }
 
   const resetVotes = () => {
@@ -236,18 +284,18 @@ export default function AdminPage() {
     const resultsData = {
       rounds: [
         {
-          question: question,
-          options: options,
+          question: rounds[0].question,
+          options: rounds[0].options,
           votes: votes[0] || [0, 0],
         },
         {
-          question: question,
-          options: options,
+          question: rounds[1].question,
+          options: rounds[1].options,
           votes: votes[1] || [0, 0],
         },
         {
-          question: question,
-          options: options,
+          question: rounds[2].question,
+          options: rounds[2].options,
           votes: votes[2] || [0, 0],
         },
       ],
@@ -291,8 +339,17 @@ export default function AdminPage() {
       return
     }
 
+    console.log("Saving codes:", codeList)
     setCodes(codeList)
     localStorage.setItem("codes", JSON.stringify(codeList))
+
+    // Initialize code statuses for new codes
+    const newStatuses = codeList.reduce((acc: { [key: string]: boolean }, code: string) => {
+      acc[code] = false
+      return acc
+    }, {})
+    setCodeStatuses(newStatuses)
+    localStorage.setItem("codeStatuses", JSON.stringify(newStatuses))
 
     toast({
       title: "Codes saved",
@@ -313,6 +370,26 @@ export default function AdminPage() {
 
     return () => clearInterval(interval)
   }, [])
+
+  const toggleCodeStatus = (code: string) => {
+    setCodeStatuses(prev => ({
+      ...prev,
+      [code]: !prev[code]
+    }))
+  }
+
+  const resetAllCodes = () => {
+    const newStatuses = codes.reduce((acc: { [key: string]: boolean }, code: string) => {
+      acc[code] = false
+      return acc
+    }, {})
+    setCodeStatuses(newStatuses)
+    localStorage.setItem("codeStatuses", JSON.stringify(newStatuses))
+    toast({
+      title: "Codes reset",
+      description: "All codes have been marked as unused",
+    })
+  }
 
   if (!isAuthenticated) {
     return (
@@ -350,7 +427,17 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-black p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-purple-400 mb-8">Band Competition Manager Dashboard</h1>
+        <div className="flex items-center justify-between mb-8">
+          <Button
+            onClick={() => window.history.back()}
+            variant="outline"
+            className="border-purple-700 text-purple-400 hover:bg-purple-900"
+          >
+            ← Back
+          </Button>
+          <h1 className="text-3xl font-bold text-purple-400">Band Competition Manager Dashboard</h1>
+          <div className="w-20"></div> {/* Spacer for alignment */}
+        </div>
 
         <Tabs defaultValue="control" className="space-y-6">
           <TabsList className="bg-zinc-900 border-b border-purple-700">
@@ -443,8 +530,8 @@ export default function AdminPage() {
                   <div>
                     <label className="block text-sm font-medium text-zinc-400 mb-1">Question</label>
                     <Input
-                      value={question}
-                      onChange={(e) => setQuestion(e.target.value)}
+                      value={rounds[currentRound].question}
+                      onChange={(e) => updateQuestion(currentRound, e.target.value)}
                       className="bg-zinc-800 border-purple-700 text-white"
                       placeholder="Enter question"
                       disabled={isVotingActive}
@@ -454,8 +541,8 @@ export default function AdminPage() {
                   <div>
                     <label className="block text-sm font-medium text-zinc-400 mb-1">Option 1</label>
                     <Input
-                      value={options[0]}
-                      onChange={(e) => updateOption(0, e.target.value)}
+                      value={rounds[currentRound].options[0]}
+                      onChange={(e) => updateOption(currentRound, 0, e.target.value)}
                       className="bg-zinc-800 border-purple-700 text-white"
                       placeholder="Enter first option"
                       disabled={isVotingActive}
@@ -465,8 +552,8 @@ export default function AdminPage() {
                   <div>
                     <label className="block text-sm font-medium text-zinc-400 mb-1">Option 2</label>
                     <Input
-                      value={options[1]}
-                      onChange={(e) => updateOption(1, e.target.value)}
+                      value={rounds[currentRound].options[1]}
+                      onChange={(e) => updateOption(currentRound, 1, e.target.value)}
                       className="bg-zinc-800 border-purple-700 text-white"
                       placeholder="Enter second option"
                       disabled={isVotingActive}
@@ -481,8 +568,8 @@ export default function AdminPage() {
                           JSON.stringify({
                             isActive: isVotingActive,
                             currentRound,
-                            question,
-                            options,
+                            question: rounds[currentRound].question,
+                            options: rounds[currentRound].options,
                             timeLeft,
                           }),
                         )
@@ -511,6 +598,56 @@ export default function AdminPage() {
                 </div>
                 <p className="text-zinc-400 text-sm text-center">Scan this QR code to access the voting page</p>
                 <p className="text-purple-400 mt-2 text-center font-mono">{baseUrl}</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-zinc-900 border-purple-700">
+              <CardHeader>
+                <CardTitle className="text-purple-400">Voting Settings</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-zinc-300">Allow Code Reuse</label>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-zinc-400">{allowCodeReuse ? "Yes" : "No"}</span>
+                    <Button
+                      onClick={() => setAllowCodeReuse(!allowCodeReuse)}
+                      className="bg-purple-700 hover:bg-purple-800 text-white"
+                    >
+                      {allowCodeReuse ? "Disable" : "Enable"}
+                    </Button>
+                  </div>
+                </div>
+                <div className="text-sm text-zinc-400">
+                  {allowCodeReuse 
+                    ? "Codes can be used multiple times across different rounds" 
+                    : "Each code can only be used once per round"}
+                </div>
+
+                <div className="pt-4 border-t border-zinc-700 space-y-4">
+                  <Button
+                    onClick={() => {
+                      // Clear all localStorage data
+                      localStorage.clear()
+                      // Reset code statuses
+                      const newStatuses: Record<string, boolean> = {}
+                      codes.forEach((code) => {
+                        newStatuses[code] = false
+                      })
+                      localStorage.setItem("codeStatuses", JSON.stringify(newStatuses))
+                      // Reset votes
+                      localStorage.setItem("votes", JSON.stringify({}))
+                      toast({
+                        title: "Cache cleared",
+                        description: "All data has been reset",
+                      })
+                    }}
+                    variant="outline"
+                    className="w-full border-yellow-700 text-yellow-400 hover:bg-yellow-900/30"
+                  >
+                    Clear All Cache
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -549,11 +686,11 @@ export default function AdminPage() {
                         <BarChart
                           data={[
                             {
-                              name: options[0] || `Band A`,
+                              name: rounds[round].options[0] || `Band A`,
                               votes: votes[round] ? votes[round][0] : 0,
                             },
                             {
-                              name: options[1] || `Band B`,
+                              name: rounds[round].options[1] || `Band B`,
                               votes: votes[round] ? votes[round][1] : 0,
                             },
                           ]}
@@ -583,8 +720,8 @@ export default function AdminPage() {
                           <p className="text-xl font-bold text-purple-400">
                             {votes[round] && votes[round][0] !== votes[round][1]
                               ? votes[round][0] > votes[round][1]
-                                ? options[0]
-                                : options[1]
+                                ? rounds[round].options[0]
+                                : rounds[round].options[1]
                               : "Tie"}
                           </p>
                         </div>
@@ -593,7 +730,7 @@ export default function AdminPage() {
                   ))}
                 </Tabs>
 
-                <Button onClick={exportResults} className="mt-6 bg-purple-700 hover:bg-purple-800 text-white">
+                <Button onClick={exportResults} className="mt-32 bg-purple-700 hover:bg-purple-800 text-white">
                   Export Results
                 </Button>
               </CardContent>
@@ -640,13 +777,45 @@ export default function AdminPage() {
                 </div>
 
                 <div className="mt-6">
-                  <h3 className="text-lg font-medium text-purple-400 mb-3">Current Codes ({codes.length})</h3>
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="text-lg font-medium text-purple-400">Current Codes ({codes.length})</h3>
+                    <Button
+                      onClick={resetAllCodes}
+                      variant="outline"
+                      className="border-purple-700 text-purple-400 hover:bg-purple-900"
+                    >
+                      Reset All Codes
+                    </Button>
+                  </div>
 
                   {codes.length > 0 ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 max-h-60 overflow-y-auto p-2">
                       {codes.map((code, index) => (
                         <div key={index} className="bg-zinc-800 p-2 rounded border border-zinc-700">
-                          <p className="font-mono text-sm text-purple-300">{code}</p>
+                          <div className="flex items-center justify-between">
+                            <Input
+                              value={code}
+                              onChange={(e) => {
+                                const newCodes = [...codes]
+                                newCodes[index] = e.target.value
+                                setCodes(newCodes)
+                                setCodesInput(newCodes.join("\n"))
+                                localStorage.setItem("codes", JSON.stringify(newCodes))
+                              }}
+                              className="bg-transparent border-none p-0 h-auto font-mono text-sm text-purple-300 focus-visible:ring-0 focus-visible:ring-offset-0"
+                            />
+                            <Button
+                              onClick={() => toggleCodeStatus(code)}
+                              variant="outline"
+                              className={`ml-2 px-2 py-1 text-xs ${
+                                codeStatuses[code]
+                                  ? "border-red-700 text-red-400 hover:bg-red-900/30"
+                                  : "border-green-700 text-green-400 hover:bg-green-900/30"
+                              }`}
+                            >
+                              {codeStatuses[code] ? "Used" : "Unused"}
+                            </Button>
+                          </div>
                         </div>
                       ))}
                     </div>

@@ -18,17 +18,45 @@ export default function VotePage() {
   const [selectedOption, setSelectedOption] = useState<number | null>(null)
   const { toast } = useToast()
 
-  // Simulate checking if voting is active
+  // Initialize voting data
+  useEffect(() => {
+    const votingData = localStorage.getItem("votingData")
+    if (votingData) {
+      const data = JSON.parse(votingData)
+      setCurrentRound(data.currentRound)
+      setQuestion(data.question || "Which band do you prefer?")
+      setOptions(data.options || ["Band A", "Band B"])
+    }
+
+    // Check if there's a saved code and if it's used
+    const savedCode = localStorage.getItem("currentCode")
+    if (savedCode) {
+      const savedStatuses = localStorage.getItem("codeStatuses")
+      const codeStatuses = savedStatuses ? JSON.parse(savedStatuses) : {}
+      
+      if (codeStatuses[savedCode]) {
+        setStatus("completed")
+        toast({
+          title: "Code already used",
+          description: "This code has already been used in this round",
+          variant: "destructive",
+        })
+      } else {
+        setCode(savedCode)
+        setStatus("waiting")
+      }
+    }
+  }, [toast])
+
+  // Check voting status
   useEffect(() => {
     const checkVotingStatus = () => {
-      // In a real app, this would be a server call or websocket connection
       const votingData = localStorage.getItem("votingData")
-
       if (votingData) {
         const data = JSON.parse(votingData)
         setCurrentRound(data.currentRound)
-        setQuestion(data.question)
-        setOptions(data.options)
+        setQuestion(data.question || "Which band do you prefer?")
+        setOptions(data.options || ["Band A", "Band B"])
 
         if (data.isActive && status === "waiting") {
           setStatus("voting")
@@ -54,7 +82,6 @@ export default function VotePage() {
     const timer = setTimeout(() => {
       setTimeLeft(timeLeft - 1)
       if (timeLeft === 1) {
-        // Auto-submit when time runs out
         if (selectedOption !== null) {
           handleSubmit()
         } else {
@@ -74,8 +101,37 @@ export default function VotePage() {
   const handleCodeSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    // In a real app, this would validate against a server
-    if (code.length < 3) {
+    // Load codes and their statuses
+    const savedCodes = localStorage.getItem("codes")
+    const savedCodeStatuses = localStorage.getItem("codeStatuses")
+    const savedReuseSetting = localStorage.getItem("allowCodeReuse")
+
+    console.log("Validating code:", code)
+    console.log("Saved codes:", savedCodes)
+    console.log("Code statuses:", savedCodeStatuses)
+    console.log("Allow reuse:", savedReuseSetting)
+
+    if (!savedCodes || !savedCodeStatuses) {
+      console.log("Missing codes or statuses")
+      toast({
+        title: "Error",
+        description: "Voting system is not properly initialized",
+        variant: "destructive",
+      })
+      return
+    }
+
+    const codes = JSON.parse(savedCodes)
+    const codeStatuses = JSON.parse(savedCodeStatuses)
+    const allowCodeReuse = savedReuseSetting ? JSON.parse(savedReuseSetting) : false
+
+    console.log("Parsed codes:", codes)
+    console.log("Parsed statuses:", codeStatuses)
+    console.log("Allow reuse:", allowCodeReuse)
+
+    // Check if code exists
+    if (!codes.includes(code)) {
+      console.log("Invalid code")
       toast({
         title: "Invalid code",
         description: "Please enter a valid voting code",
@@ -84,45 +140,29 @@ export default function VotePage() {
       return
     }
 
-    // Check if code exists in the predefined list
-    const savedCodes = localStorage.getItem("codes")
-    const validCodes = savedCodes ? JSON.parse(savedCodes) : []
-
-    if (!validCodes.includes(code)) {
-      toast({
-        title: "Invalid code",
-        description: "This code is not recognized",
-        variant: "destructive",
-      })
-      return
-    }
-
-    // Check if code was already used for this round
-    const usedCodes = JSON.parse(localStorage.getItem("usedCodes") || "{}")
-    if (usedCodes[code] && usedCodes[code].includes(currentRound)) {
+    // Check if code is already used
+    if (codeStatuses[code] && !allowCodeReuse) {
+      console.log("Code already used")
       toast({
         title: "Code already used",
-        description: "This code has already been used for this round",
+        description: "This code has already been used in this round",
         variant: "destructive",
       })
       return
     }
 
+    console.log("Code accepted")
+    // Save current code
+    setCode(code)
+    localStorage.setItem("currentCode", code)
+
+    // Always go to waiting state first
     setStatus("waiting")
+
     toast({
       title: "Code accepted",
-      description: "Waiting for voting to start",
+      description: "Please wait for voting to start",
     })
-
-    // Check if voting is already active
-    const votingData = localStorage.getItem("votingData")
-    if (votingData) {
-      const data = JSON.parse(votingData)
-      if (data.isActive) {
-        setStatus("voting")
-        setTimeLeft(data.timeLeft)
-      }
-    }
   }
 
   const handleSubmit = () => {
@@ -135,17 +175,20 @@ export default function VotePage() {
       return
     }
 
-    // Record vote in localStorage (in a real app, this would be a server call)
-    const votes = JSON.parse(localStorage.getItem("votes") || "{}")
-    if (!votes[currentRound]) votes[currentRound] = [0, 0]
-    votes[currentRound][selectedOption]++
-    localStorage.setItem("votes", JSON.stringify(votes))
+    // Get current votes
+    const savedVotes = localStorage.getItem("votes")
+    const votes = savedVotes ? JSON.parse(savedVotes) : {}
 
-    // Mark code as used for this round
-    const usedCodes = JSON.parse(localStorage.getItem("usedCodes") || "{}")
-    if (!usedCodes[code]) usedCodes[code] = []
-    usedCodes[code].push(currentRound)
-    localStorage.setItem("usedCodes", JSON.stringify(usedCodes))
+    // Update votes
+    if (!votes[currentRound]) {
+      votes[currentRound] = [0, 0]
+    }
+
+    // Update the vote count
+    votes[currentRound][selectedOption]++
+
+    // Save updated votes
+    localStorage.setItem("votes", JSON.stringify(votes))
 
     setStatus("completed")
     toast({
@@ -254,19 +297,12 @@ export default function VotePage() {
                 strokeLinejoin="round"
                 className="mx-auto"
               >
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
               </svg>
             </div>
             <h2 className="text-xl font-semibold text-purple-400 mb-2">Vote Submitted!</h2>
-            <p className="text-zinc-400 mb-6">Thank you for voting. Waiting for the next round.</p>
-            <Button
-              onClick={() => setStatus("waiting")}
-              variant="outline"
-              className="border-purple-700 text-purple-400 hover:bg-purple-900"
-            >
-              Continue to Next Round
-            </Button>
+            <p className="text-zinc-400">Thank you for participating in the voting</p>
           </div>
         )}
       </Card>

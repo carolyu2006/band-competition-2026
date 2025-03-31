@@ -16,11 +16,15 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  output: 'standalone',
+  // Disable Pages Router completely
+  distDir: '.next',
+  generateBuildId: async () => 'build',
   experimental: {
     webpackBuildWorker: true,
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
-  },
+  }
 }
 
 mergeConfig(nextConfig, userConfig)
