@@ -1,0 +1,9 @@
+[build]
+command = "npm run pages:build"
+cwd = "."
+
+[build.upload]
+format = "service-worker"
+
+[site]
+bucket = ".vercel/output/static" 

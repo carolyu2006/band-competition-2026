@@ -1,12 +1,17 @@
 {
-  "name": "my-v0-project",
+  "name": "Band Competition",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "pages:build": "npx @cloudflare/next-on-pages",
+    "pages:deploy": "npx wrangler pages deploy .vercel/output/static"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
