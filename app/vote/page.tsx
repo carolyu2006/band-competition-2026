@@ -1,146 +1,183 @@
 "use client"
 
 import type React from "react"
-
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
+import Head from 'next/head'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
+import { AnimatedCircle } from "@/components/animated-circle"
+import LoadingCircles from "@/components/loading-circles"
+
+interface Round {
+  id?: number;
+  roundNumber: number;
+  title: string;
+  subtitle1: string;
+  question: string;
+  options: string[];
+  note: string;
+  isActive: boolean;
+  timeLeft: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+type Status = "waiting" | "voting" | "completed"
 
 export default function VotePage() {
-  const [code, setCode] = useState("")
-  const [status, setStatus] = useState("login") // login, waiting, voting, completed
+  // Combined loading states
+  const [isLoading, setIsLoading] = useState({
+    initial: true,
+    data: true,
+    hasData: false
+  })
+
+  // Core state
+  const [status, setStatus] = useState<Status>("waiting")
+
+  // Round state
+  const [rounds, setRounds] = useState<Round[]>([])
   const [currentRound, setCurrentRound] = useState(0)
-  const [timeLeft, setTimeLeft] = useState(0)
-  const [question, setQuestion] = useState("")
-  const [options, setOptions] = useState(["", ""])
   const [selectedOption, setSelectedOption] = useState<number | null>(null)
+  const [votedRounds, setVotedRounds] = useState<number[]>([])
+
+  // Timer state
+  const [timeLeft, setTimeLeft] = useState(0)
+  const [initialTime, setInitialTime] = useState(0)
+
+  // Ref so the timer callback always sees the latest selectedOption
+  const selectedOptionRef = useRef<number | null>(null)
+  useEffect(() => {
+    selectedOptionRef.current = selectedOption
+  }, [selectedOption])
+
   const { toast } = useToast()
 
-  // Initialize voting data
+  // Initialize and poll data — only re-run when status changes, NOT timeLeft
   useEffect(() => {
-    const votingData = localStorage.getItem("votingData")
-    if (votingData) {
-      const data = JSON.parse(votingData)
-      setCurrentRound(data.currentRound)
-      setQuestion(data.question || "Which band do you prefer?")
-      setOptions(data.options || ["Band A", "Band B"])
-    }
+    fetchData()
 
-    // Check if there's a saved code and if it's used
-    const savedCode = localStorage.getItem("currentCode")
-    if (savedCode) {
-      const savedStatuses = localStorage.getItem("codeStatuses")
-      const codeStatuses = savedStatuses ? JSON.parse(savedStatuses) : {}
-      
-      if (codeStatuses[savedCode]) {
-        setStatus("completed")
-        toast({
-          title: "Code already used",
-          description: "This code has already been used in this round",
-          variant: "destructive",
-        })
-      } else {
-        setCode(savedCode)
-        setStatus("waiting")
-      }
+    if (status === "waiting" || status === "voting") {
+      const interval = setInterval(fetchData, 3000)
+      return () => clearInterval(interval)
     }
-  }, [toast])
+  }, [status])
 
-  // Check voting status
+  // Timer effect — only start/stop when status changes to/from "voting"
   useEffect(() => {
-    const checkVotingStatus = () => {
-      const votingData = localStorage.getItem("votingData")
-      if (votingData) {
-        const data = JSON.parse(votingData)
-        setCurrentRound(data.currentRound)
-        setQuestion(data.question || "Which band do you prefer?")
-        setOptions(data.options || ["Band A", "Band B"])
+    if (status !== "voting") return
 
-        if (data.isActive && status === "waiting") {
-          setStatus("voting")
-          setTimeLeft(data.timeLeft)
-        } else if (!data.isActive && status === "voting") {
-          setStatus("waiting")
-          toast({
-            title: "Voting completed",
-            description: "Waiting for the next round to start",
-          })
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(timer)
+          // Use ref to avoid stale closure
+          if (selectedOptionRef.current !== null) {
+            handleSubmit()
+          } else {
+            setStatus("waiting")
+            toast({
+              title: "Time's up!",
+              description: "You didn't select an option in time",
+              variant: "destructive",
+            })
+          }
+          return 0
         }
-      }
-    }
-
-    const interval = setInterval(checkVotingStatus, 1000)
-    return () => clearInterval(interval)
-  }, [status, toast])
-
-  // Countdown timer
-  useEffect(() => {
-    if (status !== "voting" || timeLeft <= 0) return
-
-    const timer = setTimeout(() => {
-      setTimeLeft(timeLeft - 1)
-      if (timeLeft === 1) {
-        if (selectedOption !== null) {
-          handleSubmit()
-        } else {
-          setStatus("waiting")
-          toast({
-            title: "Time's up!",
-            description: "You didn't select an option in time",
-            variant: "destructive",
-          })
-        }
-      }
+        return prev - 1
+      })
     }, 1000)
 
-    return () => clearTimeout(timer)
-  }, [timeLeft, status, selectedOption])
+    return () => clearInterval(timer)
+  }, [status])
 
-  const handleCodeSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    const codeInput = code.trim().toUpperCase()
+  // Fetch competition and rounds data
+  const fetchData = async () => {
+    try {
+      const competitionResponse = await fetch('/api/competition')
+      if (!competitionResponse.ok) throw new Error('Failed to fetch competition status')
+      const competitionData = await competitionResponse.json()
 
-    // Get code statuses from localStorage
-    const savedStatuses = localStorage.getItem("codeStatuses")
-    const codeStatuses = savedStatuses ? JSON.parse(savedStatuses) : {}
+      if (competitionData.ended) {
+        setStatus("completed")
+        toast({
+          title: "比赛已结束",
+          description: "投票已结束，感谢参与",
+          variant: "destructive",
+        })
+        return
+      }
 
-    // Check if code exists and is valid
-    const savedCodes = localStorage.getItem("codes")
-    const codes = savedCodes ? JSON.parse(savedCodes) : []
-    const codeIndex = codes.indexOf(codeInput)
+      const roundsResponse = await fetch('/api/rounds')
+      if (!roundsResponse.ok) throw new Error('Failed to fetch rounds data')
+      const roundsData = await roundsResponse.json()
 
-    if (codeIndex === -1) {
+      setRounds(roundsData)
+      const activeRound = roundsData.find((round: Round) => round.isActive === true)
+
+      if (activeRound?.isActive) {
+        // Check in-memory state first, then fall back to server cookie check
+        const alreadyVotedInMemory = votedRounds.includes(activeRound.roundNumber)
+        if (alreadyVotedInMemory) {
+          setStatus("waiting")
+          return
+        }
+
+        // Check cookie on the server (survives page refresh)
+        const cookieCheckRes = await fetch(`/api/vote-cookies/check?roundId=${activeRound.roundNumber}`)
+        if (cookieCheckRes.ok) {
+          const { hasVoted } = await cookieCheckRes.json()
+          if (hasVoted) {
+            // Sync in-memory state so we don't re-check on every poll
+            setVotedRounds(prev =>
+              prev.includes(activeRound.roundNumber) ? prev : [...prev, activeRound.roundNumber]
+            )
+            setStatus("waiting")
+            return
+          }
+        }
+
+        // New round started — set time once and begin voting
+        if (activeRound.roundNumber !== currentRound) {
+          setCurrentRound(activeRound.roundNumber)
+          setTimeLeft(activeRound.timeLeft || 0)
+          setInitialTime(activeRound.timeLeft || 0)
+          setStatus("voting")
+          setSelectedOption(null)
+          return
+        }
+
+        // Same round, already voting — don't overwrite the local countdown
+        if (status === "waiting") {
+          setTimeLeft(activeRound.timeLeft || 0)
+          setInitialTime(activeRound.timeLeft || 0)
+          setStatus("voting")
+        }
+      } else {
+        // If no active round, go to waiting state
+        setStatus("waiting")
+        setTimeLeft(0)
+        setSelectedOption(null)
+      }
+
+      setIsLoading(prev => ({ ...prev, hasData: true }))
+    } catch (error) {
+      console.error('Error fetching data:', error)
       toast({
-        title: "无效代码",
-        description: "请输入有效的投票码",
+        title: "Error",
+        description: "Failed to fetch data. Please try again.",
         variant: "destructive",
       })
-      return
+    } finally {
+      setTimeout(() => {
+        setIsLoading(prev => ({ ...prev, initial: false, data: false }))
+      }, 1000)
     }
-
-    // Check if code is already used
-    if (codeStatuses[codeInput]) {
-      toast({
-        title: "代码已使用",
-        description: "此代码已在本轮中使用过",
-        variant: "destructive",
-      })
-      return
-    }
-
-    // Save the current code
-    localStorage.setItem("currentCode", codeInput)
-    setStatus("waiting")
-    
-    toast({
-      title: "代码已接受",
-      description: "等待投票开始",
-    })
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (selectedOption === null) {
       toast({
         title: "未选择选项",
@@ -150,186 +187,193 @@ export default function VotePage() {
       return
     }
 
-    // Get current votes
-    const savedVotes = localStorage.getItem("votes")
-    const votes = savedVotes ? JSON.parse(savedVotes) : {}
+    try {
+      const response = await fetch('/api/votes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          roundId: currentRound,
+          optionIndex: selectedOption,
+          title: rounds[currentRound].title,
+          subtitle1: rounds[currentRound].subtitle1,
+          note: rounds[currentRound].note
+        }),
+      })
 
-    // Update votes
-    if (!votes[currentRound]) {
-      votes[currentRound] = [0, 0]
-    }
+      if (response.ok) {
+        // Add current round to voted rounds
+        setVotedRounds(prev => [...prev, currentRound])
 
-    // Update the vote count
-    votes[currentRound][selectedOption]++
+        // Clear the selected option
+        setSelectedOption(null)
 
-    // Save updated votes
-    localStorage.setItem("votes", JSON.stringify(votes))
+        // Find the next round that hasn't been voted in
+        const nextRound = rounds.find(round =>
+          round.roundNumber > currentRound &&
+          !votedRounds.includes(round.roundNumber)
+        )
 
-    // Mark code as used
-    const savedCode = localStorage.getItem("currentCode")
-    if (savedCode) {
-      const savedStatuses = localStorage.getItem("codeStatuses")
-      const codeStatuses = savedStatuses ? JSON.parse(savedStatuses) : {}
-      codeStatuses[savedCode] = true
-      localStorage.setItem("codeStatuses", JSON.stringify(codeStatuses))
-    }
-
-    setStatus("completed")
-    toast({
-      title: "投票已提交",
-      description: "感谢您的投票！",
-    })
-  }
-
-  // Check for competition end
-  useEffect(() => {
-    const competitionEnded = localStorage.getItem("competitionEnded")
-    if (competitionEnded === "true") {
-      localStorage.removeItem("currentCode")
-      setStatus("login")
-      setCode("")
+        if (nextRound) {
+          // If there's a next unvoted round, go to waiting state
+          setStatus("waiting")
+          toast({
+            title: "投票已提交",
+            description: "等待下一轮投票开始",
+          })
+        } else {
+          // If no more unvoted rounds, go to completed state
+          setStatus("completed")
+          toast({
+            title: "投票已提交",
+            description: "感谢您的投票！",
+          })
+        }
+      } else {
+        const errorData = await response.json()
+        toast({
+          title: "提交失败",
+          description: errorData.error || "提交投票时出错",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error('Error submitting vote:', error)
       toast({
-        title: "比赛已结束",
-        description: "投票已结束，感谢参与",
+        title: "错误",
+        description: "提交投票时出错",
         variant: "destructive",
       })
     }
-  }, [])
+  }
 
-  return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-zinc-900 border-purple-700 shadow-lg p-4 md:p-6">
-        <h1 className="text-xl md:text-2xl font-bold text-center text-purple-400 mb-4 md:mb-6">
-          <div>乐队比赛投票</div>
-          <div className="text-base md:text-lg text-zinc-400">Band Competition Voting</div>
-        </h1>
+  // Loading screen
+  if (isLoading.initial || isLoading.data || !isLoading.hasData) {
+    return (
+      <>
+        <Head>
+          <title>午夜分贝 MIDNIGHT DECIBEL | NYU CSSA</title>
+          <link rel="icon" href="/cssa logo.png" />
+        </Head>
 
-        {status === "login" && (
-          <form onSubmit={handleCodeSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="code" className="block text-sm font-medium text-zinc-300 mb-1">
-                <div>输入投票码</div>
-                <div className="text-xs text-zinc-400">Enter your voting code</div>
-              </label>
-              <Input
-                id="code"
-                type="text"
-                value={code}
-                onChange={(e) => setCode(e.target.value.toUpperCase())}
-                className="bg-zinc-800 border-purple-700 text-white text-lg tracking-wider"
-                placeholder="输入您的代码"
-                required
-                autoCapitalize="characters"
-                autoComplete="off"
-              />
-            </div>
-            <Button type="submit" className="w-full bg-purple-700 hover:bg-purple-800 text-white py-6">
-              <div>提交代码</div>
-              <div className="text-sm">Submit Code</div>
-            </Button>
-          </form>
-        )}
-
-        {status === "waiting" && (
-          <div className="text-center py-8">
-            <div className="animate-pulse mb-4">
-              <div className="h-12 w-12 rounded-full bg-purple-700 mx-auto"></div>
-            </div>
-            <h2 className="text-lg md:text-xl font-semibold text-purple-400 mb-2">
-              <div>等待投票开始</div>
-              <div className="text-sm text-zinc-400">Waiting for voting to start</div>
-            </h2>
-            <p className="text-zinc-400">
-              <div>管理员将很快开始下一轮</div>
-              <div className="text-sm">The manager will start the next round soon</div>
-            </p>
-          </div>
-        )}
-
-        {status === "voting" && (
-          <div className="space-y-6">
-            <div className="bg-purple-900/50 rounded-lg p-3 text-center">
-              <div className="text-sm text-purple-300 mb-1">
-                <div>剩余时间</div>
-                <div className="text-xs">Time Remaining</div>
+        <div className="h-screen flex flex-col items-center justify-center p-4 relative">
+          <AnimatedCircle />
+          <Card className="w-full max-w-md p-4 md:p-6 bg-transparent border-none relative z-10">
+            <div className="text-center py-8">
+              <div className="flex flex-col items-center mb-10">
+                <LoadingCircles color="bg-white" size="w-5 h-5" margin="mx-1" />
               </div>
-              <div className="text-2xl font-bold text-white">{timeLeft} seconds</div>
-            </div>
-
-            <div className="mb-4">
-              <h2 className="text-lg md:text-xl font-semibold text-purple-400 mb-3">
-                <div>第 {currentRound + 1} 轮: {question}</div>
-                <div className="text-sm text-zinc-400">Round {currentRound + 1}: {question}</div>
+              <h2 className="text-2xl font-semibold text-white mb-2">
+                <span>Loading...</span>
+                <div className="text-2xl text-white">加载中...</div>
               </h2>
+            </div>
+          </Card>
+        </div>
+      </>
+    )
+  }
 
-              <div className="space-y-3 mt-4">
-                {options.map((option, index) => (
-                  <div
-                    key={index}
-                    className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                      selectedOption === index
-                        ? "border-purple-500 bg-purple-900/30"
-                        : "border-zinc-700 bg-zinc-800 hover:border-purple-700"
-                    }`}
-                    onClick={() => setSelectedOption(index)}
-                  >
-                    <div className="flex items-center">
-                      <div
-                        className={`w-6 h-6 rounded-full border-2 mr-3 flex items-center justify-center ${
-                          selectedOption === index ? "border-purple-500" : "border-zinc-500"
-                        }`}
-                      >
-                        {selectedOption === index && <div className="w-4 h-4 rounded-full bg-purple-500"></div>}
-                      </div>
-                      <span className="text-white text-lg">{option}</span>
-                    </div>
-                  </div>
-                ))}
+  // Main content
+  return (
+    <>
+      <Head>
+        <title>午夜分贝 MIDNIGHT DECIBEL | NYU CSSA</title>
+        <link rel="icon" href="/cssa-logo.png" />
+      </Head>
+
+      <div className="w-screen flex flex-col items-center justify-center p-8 relative overflow-hidden">
+
+        <AnimatedCircle />
+
+        <div className="fixed top-0 left-0 right-0 flex items-center justify-center gap-4 py-4 z-20">
+          <img src="/cssa-logo.png" alt="NYU CSSA" className="h-8 w-auto" />
+          <h1 className="text-sm font-bold text-violet-500">
+            NYUCSSA
+          </h1>
+        </div>
+
+        <div className="fixed top-10 left-0 right-0 flex items-center justify-center gap-4 py-4 z-20">
+          <img src="/ac-logo.png" alt="NYU CSSA" className="h-8 w-auto" />
+        </div>
+
+
+        <Card className="w-full max-w-md md:p-6 bg-transparent border-none relative z-10">
+          {status === "waiting" && (
+            <div className="text-center py-8">
+              <div className="mt-[60%] flex flex-col items-center mb-10">
+                <LoadingCircles color="bg-white" size="w-5 h-5" margin="mx-1" />
               </div>
+              <h2 className="text-2xl font-semibold text-white mb-2">
+                <span>等待投票开始</span>
+                <div className="text-2xl text-white">Waiting for voting to start</div>
+              </h2>
             </div>
+          )}
 
-            <Button
-              onClick={handleSubmit}
-              className="w-full bg-purple-700 hover:bg-purple-800 text-white py-6 h-auto"
-              disabled={selectedOption === null}
-            >
-              <div>提交投票</div>
-              <div className="text-sm">Submit Vote</div>
-            </Button>
-          </div>
-        )}
+          {status === "voting" && (
+            <div className="space-y-6">
+              <div className="mt-12 relative w-full px-8 h-[150px] flex items-center">
+                <h2 className="absolute left-0 text-5xl font-bold text-white">
+                  <span>{rounds[currentRound]?.title || ""}</span>
+                </h2>
+                <div className="absolute right-[-40px] bg-transparent rounded-lg p-3">
+                  <div className="text-[200px] font-bold text-white/40 leading-none">{timeLeft}</div>
+                </div>
+              </div>
 
-        {status === "completed" && (
-          <div className="text-center py-8">
-            <div className="mb-4 text-green-400">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="48"
-                height="48"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="mx-auto"
+              <div className="mb-2">
+                <h2 className="text-xl font-semibold text-white text-center">
+                  <div className="text-white">{rounds[currentRound]?.subtitle1 || ""}</div>
+                </h2>
+
+                <div className="mb-2">
+                  <h3 className="text-md font-normal text-white text-center">
+                    <span>{rounds[currentRound]?.question || ""}</span>
+                  </h3>
+                </div>
+
+                <div className="mt-2 bg-transparent rounded-lg mb-2">
+                  <div className="text-4xl text-center font-bold text-white">
+                    <span>{rounds[currentRound].note}</span>
+                  </div>
+                </div>
+
+                {/* Options */}
+                <div className="space-y-3 mt-10 mb-8 font-bold">
+                  <div className="flex justify-center space-x-8">
+                    {rounds[currentRound]?.options?.map((option, index) => (
+                      <div
+                        key={index}
+                        className={`flex flex-col items-center cursor-pointer transition-all duration-300 ${selectedOption === index ? "scale-150" : "scale-52"
+                          }`}
+                        onClick={() => setSelectedOption(index)}
+                      >
+                        <div className={`w-24 h-24 rounded-full border-8 flex items-center justify-center transition-all duration-300 border-transparent ${selectedOption === index ? "bg-white" : "bg-white/70"}`}>
+
+                          <span className="text-orange-600 text-center text-lg px-4">{option}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+
+              </div>
+
+              <Button
+                onClick={handleSubmit}
+                className="w-full bg-white text-orange-600 text-lg font-bold py-6"
+                disabled={selectedOption === null || status !== "voting"}
               >
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                <polyline points="22 4 12 14.01 9 11.01" />
-              </svg>
+                <span>提交投票</span>
+                <div className="text-lg">Submit Vote</div>
+              </Button>
             </div>
-            <h2 className="text-lg md:text-xl font-semibold text-purple-400 mb-2">
-              <div>投票已提交！</div>
-              <div className="text-sm text-zinc-400">Vote Submitted!</div>
-            </h2>
-            <p className="text-zinc-400">
-              <div>感谢您参与投票</div>
-              <div className="text-sm">Thank you for participating in the voting</div>
-            </p>
-          </div>
-        )}
-      </Card>
-    </div>
+          )}
+
+        </Card>
+      </div>
+    </>
   )
 }
 

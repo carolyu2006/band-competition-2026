@@ -11,6 +11,22 @@ import { useToast } from "@/hooks/use-toast"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "@/components/ui/chart"
 import { QRCodeSVG } from "qrcode.react"
 import { Textarea } from "@/components/ui/textarea"
+import { LayoutDashboard, List } from "lucide-react"
+
+// Define interfaces for our data types
+interface Round {
+  id?: number
+  roundNumber: number
+  title: string
+  subtitle1: string
+  question: string
+  options: string[]
+  note: string
+  isActive: boolean
+  timeLeft: number
+  createdAt?: Date
+  updatedAt?: Date
+}
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -19,97 +35,314 @@ export default function AdminPage() {
   const [isVotingActive, setIsVotingActive] = useState(false)
   const [timeLeft, setTimeLeft] = useState(60)
   const [initialTime, setInitialTime] = useState(60)
-  const [rounds, setRounds] = useState([
-    { question: "Which band do you prefer?", options: ["Band A", "Band B"] },
-    { question: "Which band do you prefer?", options: ["Band A", "Band B"] },
-    { question: "Which band do you prefer?", options: ["Band A", "Band B"] },
+  const [rounds, setRounds] = useState<Round[]>([
+    {
+      roundNumber: 0,
+      title: "午夜分贝 MIDNIGHT DECIBEL",
+      subtitle1: "二选一•Choose One",
+      question: "你更喜欢谁的演出？\nWhich performance do you prefer?",
+      options: ["余温乐队 Yuwen", "Moonlight"],
+      note: "你的选择将关乎乐队是否能在第二轮演奏，请谨慎考虑！\nYour vote determines whether a band advances to Round 2-choose wisely!",
+      isActive: false,
+      timeLeft: 0,
+    },
+    {
+      roundNumber: 1,
+      title: "午夜分贝 MIDNIGHT DECIBEL",
+      subtitle1: "二选一•Choose One",
+      question: "你更喜欢谁的演出？\nWhich performance do you prefer?",
+      options: ["蓝色渐进 Asym-bLu", "Accord"],
+      note: "你的选择将关乎乐队是否能在第二轮演奏，请谨慎考虑！\nYour vote determines whether a band advances to Round 2-choose wisely!",
+      isActive: false,
+      timeLeft: 0,
+    },
+    {
+      roundNumber: 2,
+      title: "午夜分贝 MIDNIGHT DECIBEL",
+      subtitle1: "二选一•Choose One",
+      question: "你更喜欢谁的演出？\nWhich performance do you prefer?",
+      options: ["余温乐队 Yuwen", "蓝色渐进 Asym-bLu"],
+      note: "你的选择将关乎乐队是否能在第二轮演奏，请谨慎考虑！\nYour vote determines whether a band advances to Round 2-choose wisely!",
+      isActive: false,
+      timeLeft: 0,
+    },
+    {
+      roundNumber: 3,
+      title: "午夜分贝 MIDNIGHT DECIBEL",
+      subtitle1: "二选一•Choose One",
+      question: "你更喜欢谁的演出？\nWhich performance do you prefer?",
+      options: ["Moonlight", "Accord"],
+      note: "你的选择将关乎乐队是否能在第二轮演奏，请谨慎考虑！\nYour vote determines whether a band advances to Round 2-choose wisely!",
+      isActive: false,
+      timeLeft: 0,
+    },
+    {
+      roundNumber: 4,
+      title: "午夜分贝 MIDNIGHT DECIBEL",
+      subtitle1: "二选一•Choose One",
+      question: "你更喜欢谁的演出？\nWhich performance do you prefer?",
+      options: ["余温乐队 Yuwen", "Accord"],
+      note: "你的选择将关乎乐队是否能在第二轮演奏，请谨慎考虑！\nYour vote determines whether a band advances to Round 2-choose wisely!",
+      isActive: false,
+      timeLeft: 0,
+    },
+    {
+      roundNumber: 5,
+      title: "午夜分贝 MIDNIGHT DECIBEL",
+      subtitle1: "二选一•Choose One",
+      question: "你更喜欢谁的演出？\nWhich performance do you prefer?",
+      options: ["Moonlight", "蓝色渐进 Asym-bLu"],
+      note: "你的选择将关乎乐队是否能在第二轮演奏，请谨慎考虑！\nYour vote determines whether a band advances to Round 2-choose wisely!",
+      isActive: false,
+      timeLeft: 0,
+    },
+    {
+      roundNumber: 6,
+      title: "终章审判 FINAL JUDGEMENT",
+      subtitle1: "你的YES or NO决定今夜王座归属\nYour YES or NO Decides Tonight's Throne！",
+      question: "你是否要为乐队投上一票？\nDo you want to vote for the band?",
+      options: ["Yes", "No"],
+      note: "",
+      isActive: false,
+      timeLeft: 0,
+    },
+    {
+      roundNumber: 7,
+      title: "终章审判 FINAL JUDGEMENT",
+      subtitle1: "你的YES or NO决定今夜王座归属\nYour YES or NO Decides Tonight's Throne！",
+      question: "你是否要为乐队投上一票？\nDo you want to vote for the band?",
+      options: ["Yes", "No"],
+      note: "",
+      isActive: false,
+      timeLeft: 0,
+    },
+    {
+      roundNumber: 8,
+      title: "终章审判 FINAL JUDGEMENT",
+      subtitle1: "你的YES or NO决定今夜王座归属\nYour YES or NO Decides Tonight's Throne！",
+      question: "你是否要为乐队投上一票？\nDo you want to vote for the band?",
+      options: ["Yes", "No"],
+      note: "",
+      isActive: false,
+      timeLeft: 0,
+    },
   ])
   const [votes, setVotes] = useState<number[][]>([])
-  const [codes, setCodes] = useState<string[]>([])
-  const [codesInput, setCodesInput] = useState("")
   const [baseUrl, setBaseUrl] = useState("")
-  const [allowCodeReuse, setAllowCodeReuse] = useState(false)
-  const [codeStatuses, setCodeStatuses] = useState<{ [key: string]: boolean }>({})
   const { toast } = useToast()
+    ; <style jsx global>{`
+    .writing-mode-vertical {
+      writing-mode: vertical-lr;
+      text-orientation: upright;
+    }
+  `}</style>
 
   // Initialize data
   useEffect(() => {
     // Set base URL for QR code
     setBaseUrl(window.location.origin + "/vote")
 
-    // Load any existing votes from localStorage
-    const savedVotes = localStorage.getItem("votes")
-    if (savedVotes) {
-      setVotes(Object.values(JSON.parse(savedVotes)))
-    } else {
-      // Initialize with 3 rounds of [0,0] votes
-      setVotes([
-        [0, 0],
-        [0, 0],
-        [0, 0],
-      ])
-    }
-
-    // Load saved rounds if they exist
-    const savedRounds = localStorage.getItem("rounds")
-    if (savedRounds) {
-      setRounds(JSON.parse(savedRounds))
-    }
-
-    // Load saved codes if they exist
-    const savedCodes = localStorage.getItem("codes")
-    if (savedCodes) {
-      const parsedCodes = JSON.parse(savedCodes)
-      setCodes(parsedCodes)
-      setCodesInput(parsedCodes.join("\n"))
-
-      // Initialize code statuses
-      const savedStatuses = localStorage.getItem("codeStatuses")
-      if (savedStatuses) {
-        setCodeStatuses(JSON.parse(savedStatuses))
-      } else {
-        // Initialize all codes as unused
-        const initialStatuses = parsedCodes.reduce((acc: { [key: string]: boolean }, code: string) => {
-          acc[code] = false
-          return acc
-        }, {})
-        setCodeStatuses(initialStatuses)
-        localStorage.setItem("codeStatuses", JSON.stringify(initialStatuses))
-      }
-    }
-
-    // Load code reuse setting
-    const savedReuseSetting = localStorage.getItem("allowCodeReuse")
-    if (savedReuseSetting !== null) {
-      setAllowCodeReuse(JSON.parse(savedReuseSetting))
-    }
-
     // Check if already authenticated in this session
     const authStatus = sessionStorage.getItem("adminAuthenticated")
     if (authStatus === "true") {
       setIsAuthenticated(true)
     }
+
+    // Initialize rounds in database if needed
+    const initializeRounds = async () => {
+      try {
+        const response = await fetch("/api/rounds")
+        if (response.ok) {
+          const roundsData = await response.json()
+
+          // If no rounds exist, create the default ones
+          if (roundsData.length === 0) {
+            const defaultRounds = [
+              {
+                roundNumber: 0,
+                title: "午夜分贝 MIDNIGHT DECIBEL",
+                subtitle1: "二选一•Choose One",
+                question: "你更喜欢谁的演出？\nWhich performance do you prefer?",
+                options: ["余温乐队 Yuwen", "Moonlight"],
+                note: "你的选择将关乎乐队是否能在第二轮演奏，请谨慎考虑！\nYour vote determines whether a band advances to Round 2-choose wisely!",
+                isActive: false,
+                timeLeft: 0,
+              },
+              {
+                roundNumber: 1,
+                title: "午夜分贝 MIDNIGHT DECIBEL",
+                subtitle1: "二选一•Choose One",
+                question: "你更喜欢谁的演出？\nWhich performance do you prefer?",
+                options: ["蓝色渐进 Asym-bLu", "Accord"],
+                note: "你的选择将关乎乐队是否能在第二轮演奏，请谨慎考虑！\nYour vote determines whether a band advances to Round 2-choose wisely!",
+                isActive: false,
+                timeLeft: 0,
+              },
+              {
+                roundNumber: 2,
+                title: "午夜分贝 MIDNIGHT DECIBEL",
+                subtitle1: "二选一•Choose One",
+                question: "你更喜欢谁的演出？\nWhich performance do you prefer?",
+                options: ["余温乐队 Yuwen", "蓝色渐进 Asym-bLu"],
+                note: "你的选择将关乎乐队是否能在第二轮演奏，请谨慎考虑！\nYour vote determines whether a band advances to Round 2-choose wisely!",
+                isActive: false,
+                timeLeft: 0,
+              },
+              {
+                roundNumber: 3,
+                title: "午夜分贝 MIDNIGHT DECIBEL",
+                subtitle1: "二选一•Choose One",
+                question: "你更喜欢谁的演出？\nWhich performance do you prefer?",
+                options: ["Moonlight", "Accord"],
+                note: "你的选择将关乎乐队是否能在第二轮演奏，请谨慎考虑！\nYour vote determines whether a band advances to Round 2-choose wisely!",
+                isActive: false,
+                timeLeft: 0,
+              },
+              {
+                roundNumber: 4,
+                title: "午夜分贝 MIDNIGHT DECIBEL",
+                subtitle1: "二选一•Choose One",
+                question: "你更喜欢谁的演出？\nWhich performance do you prefer?",
+                options: ["余温乐队 Yuwen", "Accord"],
+                note: "你的选择将关乎乐队是否能在第二轮演奏，请谨慎考虑！\nYour vote determines whether a band advances to Round 2-choose wisely!",
+                isActive: false,
+                timeLeft: 0,
+              },
+              {
+                roundNumber: 5,
+                title: "午夜分贝 MIDNIGHT DECIBEL",
+                subtitle1: "二选一•Choose One",
+                question: "你更喜欢谁的演出？\nWhich performance do you prefer?",
+                options: ["Moonlight", "蓝色渐进 Asym-bLu"],
+                note: "你的选择将关乎乐队是否能在第二轮演奏，请谨慎考虑！\nYour vote determines whether a band advances to Round 2-choose wisely!",
+                isActive: false,
+                timeLeft: 0,
+              },
+              {
+                roundNumber: 6,
+                title: "终章审判 FINAL JUDGEMENT",
+                subtitle1: "你的YES or NO决定今夜王座归属\nYour YES or NO Decides Tonight's Throne！",
+                question: "你是否要为乐队投上一票？\nDo you want to vote for the band?",
+                options: ["Yes", "No"],
+                note: "",
+                isActive: false,
+                timeLeft: 0,
+              },
+              {
+                roundNumber: 7,
+                title: "终章审判 FINAL JUDGEMENT",
+                subtitle1: "你的YES or NO决定今夜王座归属\nYour YES or NO Decides Tonight's Throne！",
+                question: "你是否要为乐队投上一票？\nDo you want to vote for the band?",
+                options: ["Yes", "No"],
+                note: "",
+                isActive: false,
+                timeLeft: 0,
+              },
+              {
+                roundNumber: 8,
+                title: "终章审判 FINAL JUDGEMENT",
+                subtitle1: "你的YES or NO决定今夜王座归属\nYour YES or NO Decides Tonight's Throne！",
+                question: "你是否要为乐队投上一票？\nDo you want to vote for the band?",
+                options: ["Yes", "No"],
+                note: "",
+                isActive: false,
+                timeLeft: 0,
+              },
+            ]
+
+            // Create each round
+            for (const round of defaultRounds) {
+              await fetch("/api/rounds", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(round),
+              })
+            }
+
+            // Set the rounds state
+            setRounds(defaultRounds)
+          } else {
+            // Set state from existing rounds
+            setRounds(roundsData)
+          }
+        }
+      } catch (error) {
+        console.error("Error initializing rounds:", error)
+      }
+    }
+
+    // Fetch votes from the API for all rounds
+    const fetchVotesFromAPI = async () => {
+      try {
+        const votesArray: number[][] = [
+          [0, 0],
+          [0, 0],
+          [0, 0],
+          [0, 0],
+          [0, 0],
+          [0, 0],
+          [0, 0],
+          [0, 0],
+          [0, 0],
+        ]
+
+        // Fetch votes for each round
+        for (let roundId = 0; roundId < 9; roundId++) {
+          const response = await fetch(`/api/votes/${roundId}`)
+          if (response.ok) {
+            const data = await response.json()
+            if (data.results) {
+              votesArray[roundId] = [data.results[0] || 0, data.results[1] || 0]
+            }
+          }
+        }
+
+        setVotes(votesArray)
+      } catch (error) {
+        console.error("Error fetching votes:", error)
+      }
+    }
+
+    // Execute all fetch operations
+    initializeRounds()
+    fetchVotesFromAPI()
   }, [])
 
-  // Save code statuses when they change
-  useEffect(() => {
-    localStorage.setItem("codeStatuses", JSON.stringify(codeStatuses))
-  }, [codeStatuses])
-
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (password === "Carol2006") {
-      setIsAuthenticated(true)
-      sessionStorage.setItem("adminAuthenticated", "true")
-      toast({
-        title: "Login successful",
-        description: "Welcome to the manager dashboard",
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ password }),
       })
-    } else {
+
+      const data = await response.json()
+
+      if (data.success) {
+        setIsAuthenticated(true)
+        sessionStorage.setItem("adminAuthenticated", "true")
+        toast({
+          title: "Login successful",
+          description: "Welcome to the manager dashboard",
+        })
+      } else {
+        toast({
+          title: "Login failed",
+          description: "Incorrect password",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Login error:", error)
       toast({
-        title: "Login failed",
-        description: "Incorrect password",
+        title: "Login error",
+        description: "An error occurred during login",
         variant: "destructive",
       })
     }
@@ -122,17 +355,18 @@ export default function AdminPage() {
     const timer = setTimeout(() => {
       setTimeLeft(timeLeft - 1)
 
-      // Update voting data in localStorage for real-time sync
-      localStorage.setItem(
-        "votingData",
-        JSON.stringify({
+      // Update round status in API
+      fetch("/api/rounds", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          roundNumber: currentRound,
           isActive: isVotingActive,
-          currentRound,
-          question: rounds[currentRound].question,
-          options: rounds[currentRound].options,
           timeLeft: timeLeft - 1,
         }),
-      )
+      }).catch((error) => console.error("Error updating round:", error))
 
       if (timeLeft === 1) {
         endVoting()
@@ -140,49 +374,85 @@ export default function AdminPage() {
     }, 1000)
 
     return () => clearTimeout(timer)
-  }, [timeLeft, isVotingActive])
+  }, [timeLeft, isVotingActive, currentRound])
 
-  const startVoting = () => {
-    setIsVotingActive(true)
-    setTimeLeft(initialTime)
+  const startVoting = async () => {
+    try {
+      // Update round status in API
+      const response = await fetch("/api/rounds", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          roundNumber: currentRound,
+          isActive: true,
+          timeLeft: initialTime,
+        }),
+      })
 
-    // Update voting data in localStorage for real-time sync
-    localStorage.setItem(
-      "votingData",
-      JSON.stringify({
-        isActive: true,
-        currentRound,
-        question: rounds[currentRound].question,
-        options: rounds[currentRound].options,
-        timeLeft: initialTime,
-      }),
-    )
+      if (response.ok) {
+        setIsVotingActive(true)
+        setTimeLeft(initialTime)
 
-    toast({
-      title: "Voting started",
-      description: `Round ${currentRound + 1} voting is now active`,
-    })
+        toast({
+          title: "Voting started",
+          description: `Round ${currentRound + 1} voting is now active`,
+        })
+      } else {
+        toast({
+          title: "Error starting voting",
+          description: "There was an error starting the voting session",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Error starting voting:", error)
+      toast({
+        title: "Error starting voting",
+        description: "There was an error starting the voting session",
+        variant: "destructive",
+      })
+    }
   }
 
-  const endVoting = () => {
-    setIsVotingActive(false)
+  const endVoting = async () => {
+    try {
+      // Update round status in API
+      const response = await fetch("/api/rounds", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          roundNumber: currentRound,
+          isActive: false,
+          timeLeft: 0,
+        }),
+      })
 
-    // Update voting data in localStorage
-    localStorage.setItem(
-      "votingData",
-      JSON.stringify({
-        isActive: false,
-        currentRound,
-        question: rounds[currentRound].question,
-        options: rounds[currentRound].options,
-        timeLeft: 0,
-      }),
-    )
+      if (response.ok) {
+        setIsVotingActive(false)
 
-    toast({
-      title: "Voting ended",
-      description: `Round ${currentRound + 1} voting has ended`,
-    })
+        toast({
+          title: "Voting ended",
+          description: `Round ${currentRound + 1} voting has ended`,
+        })
+      } else {
+        toast({
+          title: "Error ending voting",
+          description: "There was an error ending the voting session",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Error ending voting:", error)
+      toast({
+        title: "Error ending voting",
+        description: "There was an error ending the voting session",
+        variant: "destructive",
+      })
+    }
   }
 
   const nextRound = () => {
@@ -195,7 +465,7 @@ export default function AdminPage() {
       return
     }
 
-    if (currentRound < 2) {
+    if (currentRound < 8) {
       setCurrentRound(currentRound + 1)
       toast({
         title: "Round advanced",
@@ -233,21 +503,65 @@ export default function AdminPage() {
     }
   }
 
-  const updateOption = (roundIndex: number, optionIndex: number, value: string) => {
+  const updateOption = async (roundIndex: number, optionIndex: number, value: string) => {
     const newRounds = [...rounds]
+    const currentRoundData = newRounds[roundIndex]
     newRounds[roundIndex].options[optionIndex] = value
     setRounds(newRounds)
-    localStorage.setItem("rounds", JSON.stringify(newRounds))
+
+    try {
+      // Update options in API
+      await fetch("/api/rounds", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          roundNumber: roundIndex,
+          title: rounds[roundIndex].title,
+          subtitle1: rounds[roundIndex].subtitle1,
+          question: rounds[roundIndex].question,
+          options: currentRoundData.options,
+          note: rounds[roundIndex].note,
+          isActive: !!currentRoundData.isActive,
+          timeLeft: currentRoundData.timeLeft || 0,
+        }),
+      })
+    } catch (error) {
+      console.error("Error updating option:", error)
+    }
   }
 
-  const updateQuestion = (roundIndex: number, value: string) => {
+  const updateQuestion = async (roundIndex: number, value: string) => {
     const newRounds = [...rounds]
+    const currentRoundData = newRounds[roundIndex]
     newRounds[roundIndex].question = value
     setRounds(newRounds)
-    localStorage.setItem("rounds", JSON.stringify(newRounds))
+
+    try {
+      // Update question in API
+      await fetch("/api/rounds", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          roundNumber: roundIndex,
+          title: rounds[roundIndex].title,
+          subtitle1: rounds[roundIndex].subtitle1,
+          question: value,
+          options: currentRoundData.options,
+          note: rounds[roundIndex].note,
+          isActive: !!currentRoundData.isActive,
+          timeLeft: currentRoundData.timeLeft || 0,
+        }),
+      })
+    } catch (error) {
+      console.error("Error updating question:", error)
+    }
   }
 
-  const resetVotes = () => {
+  const resetVotes = async () => {
     if (isVotingActive) {
       toast({
         title: "Cannot reset votes",
@@ -257,22 +571,37 @@ export default function AdminPage() {
       return
     }
 
-    // Reset votes for current round
-    const newVotes = [...votes]
-    newVotes[currentRound] = [0, 0]
-    setVotes(newVotes)
+    try {
+      // Delete votes for the current round via API
+      const response = await fetch("/api/votes", {
+        method: "DELETE",
+      })
 
-    // Update in localStorage
-    const votesObj: { [key: number]: number[] } = {}
-    newVotes.forEach((vote, index) => {
-      votesObj[index] = vote
-    })
-    localStorage.setItem("votes", JSON.stringify(votesObj))
+      if (response.ok) {
+        // Reset votes for current round in local state
+        const newVotes = [...votes]
+        newVotes[currentRound] = [0, 0]
+        setVotes(newVotes)
 
-    toast({
-      title: "Votes reset",
-      description: `Votes for round ${currentRound + 1} have been reset`,
-    })
+        toast({
+          title: "Votes reset",
+          description: `Votes have been reset for all rounds`,
+        })
+      } else {
+        toast({
+          title: "Error resetting votes",
+          description: "There was an error resetting the votes",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Error resetting votes:", error)
+      toast({
+        title: "Error resetting votes",
+        description: "There was an error resetting the votes",
+        variant: "destructive",
+      })
+    }
   }
 
   const exportResults = () => {
@@ -293,6 +622,36 @@ export default function AdminPage() {
           question: rounds[2].question,
           options: rounds[2].options,
           votes: votes[2] || [0, 0],
+        },
+        {
+          question: rounds[3].question,
+          options: rounds[3].options,
+          votes: votes[3] || [0, 0],
+        },
+        {
+          question: rounds[4].question,
+          options: rounds[4].options,
+          votes: votes[4] || [0, 0],
+        },
+        {
+          question: rounds[5].question,
+          options: rounds[5].options,
+          votes: votes[5] || [0, 0],
+        },
+        {
+          question: rounds[6].question,
+          options: rounds[6].options,
+          votes: votes[6] || [0, 0],
+        },
+        {
+          question: rounds[7].question,
+          options: rounds[7].options,
+          votes: votes[7] || [0, 0],
+        },
+        {
+          question: rounds[8].question,
+          options: rounds[8].options,
+          votes: votes[8] || [0, 0],
         },
       ],
       timestamp: new Date().toISOString(),
@@ -319,72 +678,80 @@ export default function AdminPage() {
     })
   }
 
-  const saveCodes = () => {
-    // Split the input by newlines and filter out empty lines
-    const codeList = codesInput
-      .split("\n")
-      .map((code) => code.trim())
-      .filter((code) => code.length > 0)
+  // Fetch votes from API periodically
+  useEffect(() => {
+    const fetchVotesFromAPI = async () => {
+      try {
+        // Fetch votes for each round
+        const votesArray: number[][] = [
+          [0, 0],
+          [0, 0],
+          [0, 0],
+          [0, 0],
+          [0, 0],
+          [0, 0],
+          [0, 0],
+          [0, 0],
+          [0, 0],
+        ]
 
-    if (codeList.length === 0) {
-      toast({
-        title: "No codes provided",
-        description: "Please enter at least one code",
-        variant: "destructive",
-      })
-      return
+        for (let roundId = 0; roundId < 9; roundId++) {
+          const response = await fetch(`/api/votes/${roundId}`)
+          if (response.ok) {
+            const data = await response.json()
+            if (data.results) {
+              votesArray[roundId] = [data.results[0] || 0, data.results[1] || 0]
+            }
+          }
+        }
+
+        setVotes(votesArray)
+      } catch (error) {
+        console.error("Error fetching votes:", error)
+      }
     }
 
-    setCodes(codeList)
-    localStorage.setItem("codes", JSON.stringify(codeList))
-
-    toast({
-      title: "Codes saved",
-      description: `${codeList.length} voting codes have been saved`,
-    })
-  }
-
-  // Load votes from localStorage periodically to see real-time updates
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const savedVotes = localStorage.getItem("votes")
-      if (savedVotes) {
-        const parsedVotes = JSON.parse(savedVotes)
-        const votesArray = Object.keys(parsedVotes).map((key) => parsedVotes[key])
-        setVotes(votesArray)
-      }
-    }, 1000)
-
+    const interval = setInterval(fetchVotesFromAPI, 1000)
     return () => clearInterval(interval)
   }, [])
 
-  const toggleCodeStatus = (code: string) => {
-    setCodeStatuses(prev => ({
-      ...prev,
-      [code]: !prev[code]
-    }))
-  }
+  const clearVoteCookiesForThisBrowser = async () => {
+    try {
+      const response = await fetch("/api/vote-cookies/clear", {
+        method: "POST",
+      })
 
-  const resetAllCodes = () => {
-    const newStatuses = codes.reduce((acc: { [key: string]: boolean }, code: string) => {
-      acc[code] = false
-      return acc
-    }, {})
-    setCodeStatuses(newStatuses)
-    localStorage.setItem("codeStatuses", JSON.stringify(newStatuses))
-    toast({
-      title: "Codes reset",
-      description: "All codes have been marked as unused",
-    })
+      if (response.ok) {
+        toast({
+          title: "Cookies cleared",
+          description: "Vote cookies have been cleared for this browser",
+        })
+      } else {
+        toast({
+          title: "Error clearing cookies",
+          description: "There was an error clearing vote cookies",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Error clearing vote cookies:", error)
+      toast({
+        title: "Error clearing cookies",
+        description: "There was an error clearing vote cookies",
+        variant: "destructive",
+      })
+    }
   }
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4">
-        <Card className="w-full max-w-md bg-zinc-900 border-purple-700">
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 relative">
+        {/* <AnimatedCircle /> */}
+
+        <Card className="w-full max-w-md bg-zinc-900/80 backdrop-blur-sm border-transparent z-10">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center text-purple-400">
-              <div>管理员登录</div>
+            <CardTitle className="text-2xl font-bold text-center text-orange-400">
+              <span>管理员登录</span>
               <div className="text-lg text-zinc-400">Manager Login</div>
             </CardTitle>
           </CardHeader>
@@ -392,7 +759,7 @@ export default function AdminPage() {
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-zinc-300 mb-1">
-                  <div>密码</div>
+                  <span>密码</span>
                   <div className="text-xs text-zinc-400">Password</div>
                 </label>
                 <Input
@@ -400,13 +767,13 @@ export default function AdminPage() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="bg-zinc-800 border-purple-700 text-white"
+                  className="bg-zinc-800 border-transparent text-white"
                   placeholder="输入密码"
                   required
                 />
               </div>
-              <Button type="submit" className="w-full bg-purple-700 hover:bg-purple-800 text-white">
-                <div>登录</div>
+              <Button type="submit" className="w-full bg-orange-700 hover:bg-orange-800 text-white">
+                <span>登录</span>
                 <div className="text-sm">Login</div>
               </Button>
             </form>
@@ -417,519 +784,538 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black p-4 md:p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
+    <div className="min-h-screen p-8 relative ml-24">
+      {/* <AnimatedCircle /> */}
+
+      {/* Replace the commented-out heading section with this */}
+      {/* <div className="fixed left-0 top-0 h-full flex flex-col items-center justify-center z-20 bg-zinc-900 border-r border-zinc-800 px-4 py-8">
+        <h1 className="text-3xl font-bold text-orange-400 writing-mode-vertical whitespace-nowrap">
+          <span className="block mb-4">乐队比赛管理面板</span>
+          <div className="text-lg text-zinc-400">Band Competition Manager Dashboard</div>
+        </h1>
+        <Button
+          onClick={() => window.history.back()}
+          variant="outline"
+          className="mt-8 border-transparent text-orange-400"
+        >
+          <span>返回</span>
+          <div className="text-sm">← Back</div>
+        </Button>
+      </div> */}
+
+      <div className="max-w-7xl mx-auto z-10">
+        {/* heading */}
+        {/* <div className="flex items-center justify-between mb-8 z-10">
           <Button
             onClick={() => window.history.back()}
             variant="outline"
-            className="border-purple-700 text-purple-400 hover:bg-purple-900"
+            className="border-transparent text-orange-400"
           >
-            <div>返回</div>
+            <span>返回</span>
             <div className="text-sm">← Back</div>
           </Button>
-          <h1 className="text-3xl font-bold text-purple-400">
-            <div>乐队比赛管理面板</div>
+          <h1 className="text-3xl font-bold text-orange-400">
+            <span>乐队比赛管理面板</span>
             <div className="text-lg text-zinc-400">Band Competition Manager Dashboard</div>
           </h1>
           <div className="w-20"></div>
-        </div>
+        </div> */}
 
-        <Tabs defaultValue="control" className="space-y-6">
-          <TabsList className="bg-zinc-900 border-b border-purple-700">
-            <TabsTrigger value="control" className="data-[state=active]:bg-purple-900 data-[state=active]:text-white">
-              <div>控制面板</div>
-              <div className="text-sm">Control Panel</div>
-            </TabsTrigger>
-            <TabsTrigger value="results" className="data-[state=active]:bg-purple-900 data-[state=active]:text-white">
-              <div>结果</div>
-              <div className="text-sm">Results</div>
-            </TabsTrigger>
-            <TabsTrigger value="codes" className="data-[state=active]:bg-purple-900 data-[state=active]:text-white">
-              <div>投票码</div>
-              <div className="text-sm">Voting Codes</div>
-            </TabsTrigger>
-          </TabsList>
+        <Tabs defaultValue="control" className="gap-6 overflow-hidden relative">
+          <TabsList className="fixed left-0 top-0 h-full flex flex-col items-center justify-start z-20 bg-zinc-900 border-r border-zinc-800 px-4 py-8 w-80">
 
-          <TabsContent value="control" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="bg-zinc-900 border-purple-700">
-                <CardHeader>
-                  <CardTitle className="text-purple-400">
-                    <div>投票控制</div>
-                    <div className="text-lg text-zinc-400">Voting Control</div>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between bg-zinc-800 p-4 rounded-lg">
-                    <div>
-                      <p className="text-zinc-400 text-sm">
-                        <div>当前轮次</div>
-                        <div className="text-xs">Current Round</div>
-                      </p>
-                      <p className="text-xl font-bold text-white">{currentRound + 1} of 3</p>
-                    </div>
-                    <div className="flex space-x-2">
-                      <Button
-                        onClick={previousRound}
-                        variant="outline"
-                        className="border-purple-700 text-purple-400 hover:bg-purple-900"
-                        disabled={currentRound === 0 || isVotingActive}
-                      >
-                        <div>上一轮</div>
-                        <div className="text-sm">Previous</div>
-                      </Button>
-                      <Button
-                        onClick={nextRound}
-                        variant="outline"
-                        className="border-purple-700 text-purple-400 hover:bg-purple-900"
-                        disabled={currentRound === 2 || isVotingActive}
-                      >
-                        <div>下一轮</div>
-                        <div className="text-sm">Next</div>
-                      </Button>
-                    </div>
-                  </div>
+            <div className="flex flex-col items-center mb-8">
+              <div className="w-16 flex items-center justify-center mb-4">
+                <img src="/cssa logo.png" alt="CSSA Logo" className="w-12 h-12" />
+                <span className="text-2xl text-violet-500">CSSA</span>
+              </div>
 
-                  <div className="bg-zinc-800 p-4 rounded-lg">
-                    <p className="text-zinc-400 text-sm mb-2">
-                      <div>投票计时器（秒）</div>
-                      <div className="text-xs">Voting Timer (seconds)</div>
-                    </p>
-                    <div className="flex items-center space-x-2">
-                      <Input
-                        type="number"
-                        value={initialTime}
-                        onChange={(e) => setInitialTime(Number.parseInt(e.target.value) || 60)}
-                        className="bg-zinc-700 border-purple-700 text-white"
-                        min="10"
-                        max="300"
-                        disabled={isVotingActive}
-                      />
-                      <div className="text-xl font-bold text-white min-w-16 text-center">{timeLeft}s</div>
-                    </div>
-                  </div>
-
-                  <div className="flex space-x-3">
-                    {isVotingActive ? (
-                      <Button onClick={endVoting} className="flex-1 bg-red-700 hover:bg-red-800 text-white">
-                        <div>结束投票</div>
-                        <div className="text-sm">End Voting</div>
-                      </Button>
-                    ) : (
-                      <Button onClick={startVoting} className="flex-1 bg-purple-700 hover:bg-purple-800 text-white">
-                        <div>开始投票</div>
-                        <div className="text-sm">Start Voting</div>
-                      </Button>
-                    )}
-                    <Button
-                      onClick={resetVotes}
-                      variant="outline"
-                      className="border-red-700 text-red-400 hover:bg-red-900/30"
-                      disabled={isVotingActive}
-                    >
-                      <div>重置投票</div>
-                      <div className="text-sm">Reset Votes</div>
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-zinc-900 border-purple-700">
-                <CardHeader>
-                  <CardTitle className="text-purple-400">
-                    <div>问题设置</div>
-                    <div className="text-lg text-zinc-400">Question Setup</div>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-zinc-400 mb-1">
-                      <div>问题</div>
-                      <div className="text-xs">Question</div>
-                    </label>
-                    <Input
-                      value={rounds[currentRound].question}
-                      onChange={(e) => updateQuestion(currentRound, e.target.value)}
-                      className="bg-zinc-800 border-purple-700 text-white"
-                      placeholder="输入问题"
-                      disabled={isVotingActive}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-zinc-400 mb-1">
-                      <div>选项 1</div>
-                      <div className="text-xs">Option 1</div>
-                    </label>
-                    <Input
-                      value={rounds[currentRound].options[0]}
-                      onChange={(e) => updateOption(currentRound, 0, e.target.value)}
-                      className="bg-zinc-800 border-purple-700 text-white"
-                      placeholder="输入第一个选项"
-                      disabled={isVotingActive}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-zinc-400 mb-1">
-                      <div>选项 2</div>
-                      <div className="text-xs">Option 2</div>
-                    </label>
-                    <Input
-                      value={rounds[currentRound].options[1]}
-                      onChange={(e) => updateOption(currentRound, 1, e.target.value)}
-                      className="bg-zinc-800 border-purple-700 text-white"
-                      placeholder="输入第二个选项"
-                      disabled={isVotingActive}
-                    />
-                  </div>
-
-                  <div className="pt-2">
-                    <Button
-                      onClick={() => {
-                        localStorage.setItem(
-                          "votingData",
-                          JSON.stringify({
-                            isActive: isVotingActive,
-                            currentRound,
-                            question: rounds[currentRound].question,
-                            options: rounds[currentRound].options,
-                            timeLeft,
-                          }),
-                        )
-                        toast({
-                          title: "问题已更新",
-                          description: "问题和选项已更新",
-                        })
-                      }}
-                      className="w-full bg-purple-700 hover:bg-purple-800 text-white"
-                      disabled={isVotingActive}
-                    >
-                      <div>更新问题</div>
-                      <div className="text-sm">Update Question</div>
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <h1 className="text-3xl font-bold text-orange-400 text-center mt-40">
+                <span className="text-white">Midnight Decibel</span>
+                <div className="text-xl text-white">管理面板</div>
+              </h1>
             </div>
 
-            <Card className="bg-zinc-900 border-purple-700">
-              <CardHeader>
-                <CardTitle className="text-purple-400">
-                  <div>二维码</div>
-                  <div className="text-lg text-zinc-400">QR Code</div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-col items-center">
-                <div className="bg-white p-4 rounded-lg mb-4">
-                  <QRCodeSVG value={baseUrl} size={200} />
-                </div>
-                <p className="text-zinc-400 text-sm text-center">
-                  <div>扫描此二维码访问投票页面</div>
-                  <div className="text-xs">Scan this QR code to access the voting page</div>
-                </p>
-                <p className="text-purple-400 mt-2 text-center font-mono">{baseUrl}</p>
-              </CardContent>
-            </Card>
+            <div className="h-full flex flex-col gap-4 text-left w-60 mt-12">
+              <TabsTrigger value="control" className="text-lg data-[state=active]:bg-orange-900 data-[state=active]:text-white w-full justify-start">
+                <span>控制面板</span>
+                <div>Control Panel</div>
+              </TabsTrigger>
 
-            <Card className="bg-zinc-900 border-purple-700">
-              <CardHeader>
-                <CardTitle className="text-purple-400">
-                  <div>投票设置</div>
-                  <div className="text-lg text-zinc-400">Voting Settings</div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-zinc-300">
-                    <div>允许代码重用</div>
-                    <div className="text-xs text-zinc-400">Allow Code Reuse</div>
-                  </label>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm text-zinc-400">{allowCodeReuse ? "是" : "否"}</span>
-                    <Button
-                      onClick={() => setAllowCodeReuse(!allowCodeReuse)}
-                      className="bg-purple-700 hover:bg-purple-800 text-white"
-                    >
-                      {allowCodeReuse ? "禁用" : "启用"}
-                    </Button>
-                  </div>
-                </div>
-                <div className="text-sm text-zinc-400">
-                  <div>
-                    {allowCodeReuse
-                      ? "代码可以在不同轮次中多次使用"
-                      : "每个代码在每轮中只能使用一次"}
-                  </div>
-                  <div className="text-xs">
-                    {allowCodeReuse
-                      ? "Codes can be used multiple times across different rounds"
-                      : "Each code can only be used once per round"}
-                  </div>
-                </div>
+              <TabsTrigger value="results" className="text-lg data-[state=active]:bg-orange-900 data-[state=active]:text-white w-full justify-start">
+                <span>结果</span>
+                <div>Results</div>
+              </TabsTrigger>
 
-                <div className="pt-4 border-t border-zinc-700 space-y-4">
+            </div>
+          </TabsList>
 
-                  <Button
-                    onClick={() => {
-                      localStorage.clear()
-                      const newStatuses: Record<string, boolean> = {}
-                      codes.forEach((code) => {
-                        newStatuses[code] = false
-                      })
-                      localStorage.setItem("codeStatuses", JSON.stringify(newStatuses))
-                      localStorage.setItem("votes", JSON.stringify({}))
-                      toast({
-                        title: "缓存已清除",
-                        description: "所有数据已重置",
-                      })
-                    }}
-                    variant="outline"
-                    className="w-full border-yellow-700 text-yellow-400 hover:bg-yellow-900/30"
-                  >
-                    <div>清除所有缓存</div>
-                    <div className="text-sm">Clear All Cache</div>
-                  </Button>
+          <div className="ml-48 flex-1 p-8">
+            <TabsContent value="control" className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
+                <div className="fle space-y-6">
+                  <Card className="bg-zinc-900 border-transparent">
 
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="results">
-            <Card className="bg-zinc-900 border-purple-700">
-              <CardHeader>
-                <CardTitle className="text-purple-400">
-                  <div>投票结果</div>
-                  <div className="text-lg text-zinc-400">Voting Results</div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Tabs defaultValue="round1">
-                  <TabsList className="bg-zinc-800 mb-4">
-                    <TabsTrigger
-                      value="round1"
-                      className="data-[state=active]:bg-purple-900 data-[state=active]:text-white"
-                    >
-                      <div>第一轮</div>
-                      <div className="text-sm">Round 1</div>
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="round2"
-                      className="data-[state=active]:bg-purple-900 data-[state=active]:text-white"
-                    >
-                      <div>第二轮</div>
-                      <div className="text-sm">Round 2</div>
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="round3"
-                      className="data-[state=active]:bg-purple-900 data-[state=active]:text-white"
-                    >
-                      <div>第三轮</div>
-                      <div className="text-sm">Round 3</div>
-                    </TabsTrigger>
-                  </TabsList>
-
-                  {[0, 1, 2].map((round) => (
-                    <TabsContent key={round} value={`round${round + 1}`} className="h-80">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart
-                          data={[
-                            {
-                              name: rounds[round].options[0] || `Band A`,
-                              votes: votes[round] ? votes[round][0] : 0,
-                            },
-                            {
-                              name: rounds[round].options[1] || `Band B`,
-                              votes: votes[round] ? votes[round][1] : 0,
-                            },
-                          ]}
-                          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-                          <XAxis dataKey="name" stroke="#aaa" />
-                          <YAxis stroke="#aaa" />
-                          <Tooltip
-                            contentStyle={{ backgroundColor: "#333", borderColor: "#666" }}
-                            labelStyle={{ color: "#fff" }}
-                          />
-                          <Legend />
-                          <Bar dataKey="votes" fill="#9333ea" name="Votes" />
-                        </BarChart>
-                      </ResponsiveContainer>
-
-                      <div className="mt-4 grid grid-cols-2 gap-4">
-                        <div className="bg-zinc-800 p-3 rounded-lg">
-                          <p className="text-zinc-400 text-sm">
-                            <div>总投票数</div>
-                            <div className="text-xs">Total Votes</div>
-                          </p>
-                          <p className="text-xl font-bold text-white">
-                            {votes[round] ? votes[round][0] + votes[round][1] : 0}
-                          </p>
+                    <CardHeader>
+                      <CardTitle className="text-orange-400">
+                        <span>投票控制</span>
+                        <div className="text-lg text-zinc-400">Voting Control</div>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center justify-between bg-zinc-800 p-4 rounded-lg">
+                        <div>
+                          <div className="text-zinc-400 text-sm">
+                            <span>当前轮次</span>
+                            <div className="text-xs">Current Round</div>
+                          </div>
+                          <p className="text-xl font-bold text-white">{currentRound + 1} of 9</p>
                         </div>
-                        <div className="bg-zinc-800 p-3 rounded-lg">
-                          <p className="text-zinc-400 text-sm">
-                            <div>领先选项</div>
-                            <div className="text-xs">Leading Option</div>
-                          </p>
-                          <p className="text-xl font-bold text-purple-400">
-                            {votes[round] && votes[round][0] !== votes[round][1]
-                              ? votes[round][0] > votes[round][1]
-                                ? rounds[round].options[0]
-                                : rounds[round].options[1]
-                              : "平局"}
-                          </p>
+                        <div className="flex space-x-2">
+                          <Button
+                            onClick={previousRound}
+                            variant="outline"
+                            className="border-transparent text-orange-400 hover:bg-orange-900"
+                            disabled={currentRound === 0 || isVotingActive}
+                          >
+                            <span>上一轮</span>
+                            <div className="text-sm">Previous</div>
+                          </Button>
+                          <Button
+                            onClick={nextRound}
+                            variant="outline"
+                            className="border-transparent text-orange-400 hover:bg-orange-900"
+                            disabled={currentRound === 8 || isVotingActive}
+                          >
+                            <span>下一轮</span>
+                            <div className="text-sm">Next</div>
+                          </Button>
                         </div>
                       </div>
-                    </TabsContent>
-                  ))}
-                </Tabs>
 
-                <Button onClick={exportResults} className="mt-32 bg-purple-700 hover:bg-purple-800 text-white">
-                  <div>导出结果</div>
-                  <div className="text-sm">Export Results</div>
-                </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                      <div className="bg-zinc-800 p-4 rounded-lg">
+                        <div className="text-zinc-400 text-sm mb-2">
+                          <span>投票计时器（秒）</span>
+                          <div className="text-xs">Voting Timer (seconds)</div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Input
+                            type="number"
+                            value={initialTime}
+                            onChange={(e) => setInitialTime(Number.parseInt(e.target.value) || 60)}
+                            className="bg-zinc-700 border-transparent text-white"
+                            min="10"
+                            max="300"
+                            disabled={isVotingActive}
+                          />
+                          <div className="text-xl font-bold text-white min-w-16 text-center">{timeLeft}s</div>
+                        </div>
+                      </div>
 
-          <TabsContent value="codes">
-            <Card className="bg-zinc-900 border-purple-700">
-              <CardHeader>
-                <CardTitle className="text-purple-400">
-                  <div>投票码</div>
-                  <div className="text-lg text-zinc-400">Voting Codes</div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="mb-4">
-                  <p className="text-zinc-400 mb-2">
-                    <div>在下方输入投票码，每行一个。更改后需要保存。</div>
-                    <div className="text-sm">Enter your voting codes below, one code per line. You need to save the codes after making changes.</div>
-                  </p>
+                      <div className="flex space-x-3">
+                        {isVotingActive ? (
+                          <Button onClick={endVoting} className="flex-1 bg-red-700 hover:bg-red-800 text-white">
+                            <span>结束投票</span>
+                            <div className="text-sm">End Voting</div>
+                          </Button>
+                        ) : (
+                          <Button onClick={startVoting} className="flex-1 bg-orange-700 hover:bg-orange-800 text-white">
+                            <span>开始投票</span>
+                            <div className="text-sm">Start Voting</div>
+                          </Button>
+                        )}
+                        <Button
+                          onClick={resetVotes}
+                          variant="outline"
+                          className="border-red-700 text-red-400 hover:bg-red-900/30"
+                          disabled={isVotingActive}
+                        >
+                          <span>重置投票</span>
+                          <div className="text-sm">Reset Votes</div>
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
 
-                  <Textarea
-                    value={codesInput}
-                    onChange={(e) => setCodesInput(e.target.value)}
-                    className="bg-zinc-800 border-purple-700 text-white h-40 font-mono"
-                    placeholder="输入投票码，每行一个"
-                  />
+                  <Card className="bg-zinc-900 border-transparent">
+                    <CardHeader>
+                      <CardTitle className="text-orange-400">
+                        <span>二维码</span>
+                        <div className="text-lg text-zinc-400">QR Code</div>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex flex-col items-center">
+                      <div className="bg-white p-4 rounded-lg mb-4">
+                        <QRCodeSVG value={baseUrl} size={200} />
+                      </div>
+                      <div className="text-zinc-400 text-sm text-center">
+                        <span>扫描此二维码访问投票页面</span>
+                        <div className="text-xs">Scan this QR code to access the voting page</div>
+                      </div>
+                      <p className="text-orange-400 mt-2 text-center font-mono">{baseUrl}</p>
+                    </CardContent>
+                  </Card>
+                </div>
 
-                  <div className="flex space-x-3 mt-3">
-                    <Button onClick={saveCodes} className="bg-purple-700 hover:bg-purple-800 text-white">
-                      <div>保存代码</div>
-                      <div className="text-sm">Save Codes</div>
+                <Card className="bg-zinc-900 border-transparent">
+                  <CardHeader>
+                    <CardTitle className="text-orange-400">
+                      <span>问题设置</span>
+                      <div className="text-lg text-zinc-400">Question Setup</div>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-zinc-400 mb-1">
+                        <span>标题</span>
+                        <div className="text-xs">Title</div>
+                      </label>
+                      <Input
+                        value={rounds[currentRound].title}
+                        onChange={(e) => {
+                          const updatedRounds = [...rounds]
+                          updatedRounds[currentRound].title = e.target.value
+                          setRounds(updatedRounds)
+                        }}
+                        className="bg-zinc-800 border-transparent text-white"
+                        placeholder="输入标题"
+                        disabled={isVotingActive}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-zinc-400 mb-1">
+                        <span>副标题</span>
+                        <div className="text-xs">Subtitle</div>
+                      </label>
+                      <Input
+                        value={rounds[currentRound].subtitle1}
+                        onChange={(e) => {
+                          const updatedRounds = [...rounds]
+                          updatedRounds[currentRound].subtitle1 = e.target.value
+                          setRounds(updatedRounds)
+                        }}
+                        className="bg-zinc-800 border-transparent text-white"
+                        placeholder="输入副标题"
+                        disabled={isVotingActive}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-zinc-400 mb-1">
+                        <span>问题</span>
+                        <div className="text-xs">Question</div>
+                      </label>
+                      <Input
+                        value={rounds[currentRound].question}
+                        onChange={(e) => updateQuestion(currentRound, e.target.value)}
+                        className="bg-zinc-800 border-transparent text-white"
+                        placeholder="输入问题"
+                        disabled={isVotingActive}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-zinc-400 mb-1">
+                        <span>选项 1</span>
+                        <div className="text-xs">Option 1</div>
+                      </label>
+                      <Input
+                        value={rounds[currentRound].options[0]}
+                        onChange={(e) => updateOption(currentRound, 0, e.target.value)}
+                        className="bg-zinc-800 border-transparent text-white"
+                        placeholder="输入第一个选项"
+                        disabled={isVotingActive}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-zinc-400 mb-1">
+                        <span>选项 2</span>
+                        <div className="text-xs">Option 2</div>
+                      </label>
+                      <Input
+                        value={rounds[currentRound].options[1]}
+                        onChange={(e) => updateOption(currentRound, 1, e.target.value)}
+                        className="bg-zinc-800 border-transparent text-white"
+                        placeholder="输入第二个选项"
+                        disabled={isVotingActive}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-zinc-400 mb-1">
+                        <span>备注</span>
+                        <div className="text-xs">Note</div>
+                      </label>
+                      <Textarea
+                        value={rounds[currentRound].note}
+                        onChange={(e) => {
+                          const updatedRounds = [...rounds]
+                          updatedRounds[currentRound].note = e.target.value
+                          setRounds(updatedRounds)
+                        }}
+                        className="bg-zinc-800 border-transparent text-white"
+                        placeholder="输入备注"
+                        disabled={isVotingActive}
+                      />
+                    </div>
+
+                    <div className="pt-2">
+                      <Button
+                        onClick={() => {
+                          // Update API instead of using localStorage
+                          fetch("/api/rounds", {
+                            method: "POST",
+                            headers: {
+                              "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                              roundNumber: currentRound,
+                              title: rounds[currentRound].title,
+                              subtitle1: rounds[currentRound].subtitle1,
+                              question: rounds[currentRound].question,
+                              options: rounds[currentRound].options,
+                              note: rounds[currentRound].note,
+                              isActive: isVotingActive,
+                              timeLeft: timeLeft,
+                            }),
+                          })
+                            .then((response) => {
+                              if (response.ok) {
+                                toast({
+                                  title: "问题已更新",
+                                  description: "问题和选项已更新",
+                                })
+                              }
+                            })
+                            .catch((error) => {
+                              console.error("Error updating question:", error)
+                              toast({
+                                title: "更新失败",
+                                description: "更新问题时出错",
+                                variant: "destructive",
+                              })
+                            })
+                        }}
+                        className="w-full bg-orange-700 hover:bg-orange-800 text-white"
+                        disabled={isVotingActive}
+                      >
+                        <span>更新问题</span>
+                        <div className="text-sm">Update Question</div>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <Card className="bg-zinc-900 border-transparent">
+                <CardHeader>
+                  <CardTitle className="text-orange-400">
+                    <span>投票设置</span>
+                    <div className="text-lg text-zinc-400">Voting Settings</div>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="pt-4 space-y-4">
+                    <Button
+                      onClick={clearVoteCookiesForThisBrowser}
+                      variant="outline"
+                      className="w-full border-zinc-600 text-zinc-300 hover:bg-zinc-800"
+                    >
+                      <span>清除本浏览器的投票Cookie</span>
+                      <div className="text-sm">Clear Vote Cookies (This Browser)</div>
                     </Button>
 
                     <Button
                       onClick={() => {
-                        const newCodes = Array.from({ length: 150 }, () =>
-                          Math.random().toString(36).substring(2, 8).toUpperCase(),
-                        )
-                        setCodesInput(newCodes.join("\n"))
+                        // Reset all data in the API
+                        fetch("/api/reset", {
+                          method: "POST",
+                        })
+                          .then((response) => {
+                            if (response.ok) {
+                              // Reset local state
+                              setVotes([
+                                [0, 0],
+                                [0, 0],
+                                [0, 0],
+                                [0, 0],
+                                [0, 0],
+                                [0, 0],
+                                [0, 0],
+                                [0, 0],
+                                [0, 0],
+                              ])
+
+                              toast({
+                                title: "数据已重置",
+                                description: "所有数据已重置",
+                              })
+                            }
+                          })
+                          .catch((error) => {
+                            console.error("Error resetting data:", error)
+                            toast({
+                              title: "重置失败",
+                              description: "重置数据时出错",
+                              variant: "destructive",
+                            })
+                          })
                       }}
                       variant="outline"
-                      className="border-purple-700 text-purple-400 hover:bg-purple-900"
+                      className="w-full border-orange-600 text-orange-400 hover:bg-orange-600"
                     >
-                      <div>生成150个随机代码</div>
-                      <div className="text-sm">Generate 150 Random Codes</div>
+                      <span>重置所有数据</span>
+                      <div className="text-sm">Reset All Data</div>
                     </Button>
                   </div>
-                </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-                <div className="mt-6">
-                  <div className="flex justify-between items-center mb-3">
-                    <h3 className="text-lg font-medium text-purple-400">
-                      <div>当前代码 ({codes.length})</div>
-                      <div className="text-sm text-zinc-400">Current Codes ({codes.length})</div>
-                    </h3>
-                    <Button
-                      onClick={resetAllCodes}
-                      variant="outline"
-                      className="border-purple-700 text-purple-400 hover:bg-purple-900"
-                    >
-                      <div>重置所有代码</div>
-                      <div className="text-sm">Reset All Codes</div>
-                    </Button>
-                  </div>
+            <TabsContent value="results">
+              <Card className="bg-zinc-900 border-transparent">
+                <CardHeader>
+                  <CardTitle className="text-orange-400">
+                    <span>投票结果</span>
+                    <div className="text-lg text-white">Voting Results</div>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Tabs defaultValue="round1">
+                    <TabsList className="bg-zinc-800 mb-4 grid text-zinc-500 grid-cols-6 gap-2">
+                      <TabsTrigger
+                        value="round1"
+                        className="data-[state=active]:bg-orange-900 data-[state=active]:text-white"
+                      >
+                        <span>第一轮</span>
+                        <div className="text-sm">Round 1</div>
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="round2"
+                        className="data-[state=active]:bg-orange-900 data-[state=active]:text-white"
+                      >
+                        <span>第二轮</span>
+                        <div className="text-sm">Round 2</div>
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="round3"
+                        className="data-[state=active]:bg-orange-900 data-[state=active]:text-white"
+                      >
+                        <span>第三轮</span>
+                        <div className="text-sm">Round 3</div>
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="round4"
+                        className="data-[state=active]:bg-orange-900 data-[state=active]:text-white"
+                      >
+                        <span>第四轮</span>
+                        <div className="text-sm">Round 4</div>
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="round5"
+                        className="data-[state=active]:bg-orange-900 data-[state=active]:text-white"
+                      >
+                        <span>第五轮</span>
+                        <div className="text-sm">Round 5</div>
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="round6"
+                        className="data-[state=active]:bg-orange-900 data-[state=active]:text-white"
+                      >
+                        <span>第六轮</span>
+                        <div className="text-sm">Round 6</div>
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="round7"
+                        className="data-[state=active]:bg-orange-900 data-[state=active]:text-white col-start-2"
+                      >
+                        <span>第七轮</span>
+                        <div className="text-sm">Round 7</div>
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="round8"
+                        className="data-[state=active]:bg-orange-900 data-[state=active]:text-white"
+                      >
+                        <span>第八轮</span>
+                        <div className="text-sm">Round 8</div>
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="round9"
+                        className="data-[state=active]:bg-orange-900 data-[state=active]:text-white"
+                      >
+                        <span>第九轮</span>
+                        <div className="text-sm">Round 9</div>
+                      </TabsTrigger>
+                    </TabsList>
 
-                  {codes.length > 0 ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 max-h-60 overflow-y-auto p-2">
-                      {codes.map((code, index) => (
-                        <div key={index} className="bg-zinc-800 p-2 rounded border border-zinc-700">
-                          <div className="flex items-center justify-between">
-                            <Input
-                              value={code}
-                              onChange={(e) => {
-                                const newCodes = [...codes]
-                                newCodes[index] = e.target.value
-                                setCodes(newCodes)
-                                setCodesInput(newCodes.join("\n"))
-                                localStorage.setItem("codes", JSON.stringify(newCodes))
-                              }}
-                              className="bg-transparent border-none p-0 h-auto font-mono text-sm text-purple-300 focus-visible:ring-0 focus-visible:ring-offset-0"
+                    {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((round) => (
+                      <TabsContent key={round} value={`round${round + 1}`} className="mt-12 h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart
+                            data={[
+                              {
+                                name: rounds[round]?.options?.[0] || `Band A`,
+                                votes: votes[round] ? votes[round][0] : 0,
+                              },
+                              {
+                                name: rounds[round]?.options?.[1] || `Band B`,
+                                votes: votes[round] ? votes[round][1] : 0,
+                              },
+                            ]}
+                            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+                            <XAxis dataKey="name" stroke="#aaa" />
+                            <YAxis stroke="#aaa" />
+                            <Tooltip
+                              contentStyle={{ backgroundColor: "#333", borderColor: "#666" }}
+                              labelStyle={{ color: "#fff" }}
                             />
-                            <Button
-                              onClick={() => toggleCodeStatus(code)}
-                              variant="outline"
-                              className={`ml-2 px-2 py-1 text-xs ${codeStatuses[code]
-                                ? "border-red-700 text-red-400 hover:bg-red-900/30"
-                                : "border-green-700 text-green-400 hover:bg-green-900/30"
-                                }`}
-                            >
-                              {codeStatuses[code] ? "已使用" : "未使用"}
-                            </Button>
+                            <Legend />
+                            <Bar dataKey="votes" fill="#ea580c" name="Votes" />
+                          </BarChart>
+                        </ResponsiveContainer>
+
+                        <div className="mt-4 grid grid-cols-2 gap-4">
+                          <div className="bg-zinc-800 p-3 rounded-lg">
+                            <div className="text-zinc-400 text-sm">
+                              <span>总投票数</span>
+                              <div className="text-xs">Total Votes</div>
+                            </div>
+                            <p className="text-xl font-bold text-white">
+                              {votes[round] ? votes[round][0] + votes[round][1] : 0}
+                            </p>
+                          </div>
+                          <div className="bg-zinc-800 p-3 rounded-lg">
+                            <div className="text-zinc-400 text-sm">
+                              <span>领先选项</span>
+                              <div className="text-xs">Leading Option</div>
+                            </div>
+                            <p className="text-xl font-bold text-orange-400">
+                              {votes[round] && votes[round][0] !== votes[round][1]
+                                ? votes[round][0] > votes[round][1]
+                                  ? rounds[round]?.options?.[0] || "Band A"
+                                  : rounds[round]?.options?.[1] || "Band B"
+                                : "平局"}
+                            </p>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-zinc-500 italic">
-                      <div>尚未保存任何代码</div>
-                      <div className="text-sm">No codes have been saved yet</div>
-                    </p>
-                  )}
+                      </TabsContent>
+                    ))}
+                  </Tabs>
 
-                  <Button
-                    onClick={() => {
-                      if (codes.length === 0) {
-                        toast({
-                          title: "没有可复制的代码",
-                          description: "请先保存一些代码",
-                          variant: "destructive",
-                        })
-                        return
-                      }
-
-                      navigator.clipboard
-                        .writeText(codes.join("\n"))
-                        .then(() => {
-                          toast({
-                            title: "代码已复制",
-                            description: "所有投票码已复制到剪贴板",
-                          })
-                        })
-                        .catch(() => {
-                          toast({
-                            title: "复制失败",
-                            description: "无法复制代码到剪贴板",
-                            variant: "destructive",
-                          })
-                        })
-                    }}
-                    className="mt-4 bg-purple-700 hover:bg-purple-800 text-white"
-                    disabled={codes.length === 0}
-                  >
-                    <div>复制所有代码</div>
-                    <div className="text-sm">Copy All Codes</div>
+                  <Button onClick={exportResults} className="mt-32 bg-orange-700 hover:bg-orange-800 text-white">
+                    <span>导出结果</span>
+                    <div className="text-sm">Export Results</div>
                   </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+          </div>
         </Tabs>
       </div>
     </div>

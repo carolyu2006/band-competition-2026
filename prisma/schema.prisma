@@ -1,0 +1,62 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model VotingCode {
+  id        Int      @id @default(autoincrement())
+  code      String   @unique
+  isUsed    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Round {
+  id          Int      @id @default(autoincrement())
+  roundNumber Int      @unique
+  title       String   @default("")
+  subtitle1   String   @default("")
+  question    String
+  options     String?  // Stored as JSON string
+  note        String   @default("")
+  isActive    Boolean  @default(false)
+  timeLeft    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  votes       Vote[]
+}
+
+model Vote {
+  id          Int      @id @default(autoincrement())
+  roundId     Int
+  optionIndex Int
+  round       Round    @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Competition {
+  id           Int      @id @default(autoincrement())
+  isActive     Boolean  @default(true)
+  voteSession  String   @default("")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Admin {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

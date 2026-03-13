@@ -1,23 +1,21 @@
-import type { Metadata } from 'next'
 import './globals.css'
 
-export const metadata: Metadata = {
-  title: 'Midnight Decibel',
-  description: 'CSSA Midnight Decibel',
+export const metadata = {
+  title: 'Midnight Decibel', // Update title
+  description: 'voting system for midnight decibel, a nyu cssa event. coded by carol yu',
 }
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
+}) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-black">
-        <main className="container mx-auto px-4 py-8">
-          {children}
-        </main>
-      </body>
+      <head>
+        <link rel="icon" href="/cssa-logo.png" />
+      </head>
+      <body suppressHydrationWarning>{children}</body>
     </html>
   )
 }
