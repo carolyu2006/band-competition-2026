@@ -1,20 +1,15 @@
 import { NextResponse } from 'next/server';
-
-const TOTAL_ROUNDS = 9;
+import prisma from '@/lib/prisma';
 
 export async function POST() {
-  const response = NextResponse.json({ success: true });
+  try {
+    // Rotate session token so all existing vote cookies become invalid for all users
+    const newSession = crypto.randomUUID();
+    await prisma.$executeRaw`UPDATE "Competition" SET "voteSession" = ${newSession}, "updatedAt" = CURRENT_TIMESTAMP`;
 
-  for (let roundId = 0; roundId < TOTAL_ROUNDS; roundId++) {
-    const cookieName = `hasVoted_round_${roundId}`;
-    response.cookies.set(cookieName, '', {
-      httpOnly: true,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 0,
-    });
+    return NextResponse.json({ success: true, message: 'All vote cookies invalidated' });
+  } catch (error) {
+    console.error('Error clearing vote cookies:', error);
+    return NextResponse.json({ error: 'Failed to clear vote cookies' }, { status: 500 });
   }
-
-  return response;
 }
-

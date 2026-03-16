@@ -8,7 +8,7 @@ export function AnimatedCircle({ className = '' }: AnimatedCircleProps) {
   return (
     <div className="fixed inset-0 overflow-hidden z-[-1] pointer-events-none">
       {/* First circle - moves in a circular pattern */}
-      <div className="absolute w-[500px] h-[500px] rounded-full bg-orange-600/80 blur-3xl animate-float-1" style={{ left: '20%', top: '30%' }}>
+      <div className="absolute w-[500px] h-[500px] rounded-full bg-[#00FFC7]/40 blur-3xl animate-float-1" style={{ left: '20%', top: '30%' }}>
         <style jsx>{`
           @keyframes float1 {
             0% {
@@ -34,7 +34,7 @@ export function AnimatedCircle({ className = '' }: AnimatedCircleProps) {
       </div>
 
       {/* Second circle - moves in a figure-8 pattern */}
-      <div className="absolute w-[400px] h-[400px] rounded-full bg-orange-600/80 blur-3xl animate-float-2" style={{ left: '80%', top: '10%' }}>
+      <div className="absolute w-[400px] h-[400px] rounded-full bg-[#DD575E]/40 blur-3xl animate-float-2" style={{ left: '80%', top: '10%' }}>
         <style jsx>{`
           @keyframes float2 {
             0% {
@@ -60,7 +60,7 @@ export function AnimatedCircle({ className = '' }: AnimatedCircleProps) {
       </div>
 
       {/* Third circle - moves in a wave pattern */}
-      <div className="absolute w-[400px] h-[400px] rounded-full bg-yellow-500/70 blur-3xl animate-float-3" style={{ left: '60%', top: '40%' }}>
+      <div className="absolute w-[400px] h-[400px] rounded-full bg-[#DD575E]/40 blur-3xl animate-float-3" style={{ left: '60%', top: '40%' }}>
         <style jsx>{`
           @keyframes float3 {
             0% {
@@ -86,7 +86,7 @@ export function AnimatedCircle({ className = '' }: AnimatedCircleProps) {
       </div>
 
       {/* Fourth circle - moves in a spiral pattern */}
-      <div className="absolute w-[500px] h-[500px] rounded-full bg-amber-400/60 blur-3xl animate-float-4" style={{ left: '30%', top: '10%' }}>
+      <div className="absolute w-[500px] h-[500px] rounded-full bg-[#00FFC7]/30 blur-3xl animate-float-4" style={{ left: '30%', top: '10%' }}>
         <style jsx>{`
           @keyframes float4 {
             0% {
