@@ -74,15 +74,12 @@ export default function VotePage() {
 
   const { toast } = useToast()
 
-  // Initialize and poll data — only re-run when status changes, NOT timeLeft
+  // Initialize and poll data in all states so result pushes appear without refresh
   useEffect(() => {
     fetchData()
-
-    if (status === "waiting" || status === "voting" || status === "displaying") {
-      const interval = setInterval(fetchData, 3000)
-      return () => clearInterval(interval)
-    }
-  }, [status])
+    const interval = setInterval(fetchData, 1000)
+    return () => clearInterval(interval)
+  }, [])
 
   // Timer effect — only start/stop when status changes to/from "voting"
   useEffect(() => {
