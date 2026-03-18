@@ -7,6 +7,29 @@ const prisma = new PrismaClient();
 export async function GET() {
   try {
     const competition = await prisma.competition.findFirst();
+    let displayData = {
+      displayingResult: false,
+      displayRound: 0,
+      displayYesVotes: 0,
+      displayTotalVotes: 0,
+    };
+
+    try {
+      const rows = await prisma.$queryRaw<
+        { displayingResult: number | boolean; displayRound: number; displayYesVotes: number; displayTotalVotes: number }[]
+      >`SELECT "displayingResult", "displayRound", "displayYesVotes", "displayTotalVotes" FROM "Competition" LIMIT 1`;
+
+      if (rows[0]) {
+        displayData = {
+          displayingResult: !!rows[0].displayingResult,
+          displayRound: Number(rows[0].displayRound) || 0,
+          displayYesVotes: Number(rows[0].displayYesVotes) || 0,
+          displayTotalVotes: Number(rows[0].displayTotalVotes) || 0,
+        };
+      }
+    } catch {
+      // Display columns may not exist yet; keep defaults.
+    }
     
     // If no competition record exists, create a default one
     if (!competition) {
@@ -18,6 +41,7 @@ export async function GET() {
       
       return NextResponse.json({
         ...newCompetition,
+        ...displayData,
         // For backward compatibility with localStorage approach
         ended: !newCompetition.isActive
       });
@@ -25,6 +49,7 @@ export async function GET() {
     
     return NextResponse.json({
       ...competition,
+      ...displayData,
       // For backward compatibility with localStorage approach
       ended: !competition.isActive
     });

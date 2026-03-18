@@ -24,7 +24,7 @@ interface Round {
   updatedAt?: Date;
 }
 
-type Status = "waiting" | "voting" | "completed"
+type Status = "waiting" | "voting" | "displaying" | "completed"
 
 export default function VotePage() {
   // Cookie support check
@@ -50,6 +50,11 @@ export default function VotePage() {
 
   // Core state
   const [status, setStatus] = useState<Status>("waiting")
+  const [displayResult, setDisplayResult] = useState({
+    roundNumber: 0,
+    yesVotes: 0,
+    totalVotes: 0,
+  })
 
   // Round state
   const [rounds, setRounds] = useState<Round[]>([])
@@ -73,7 +78,7 @@ export default function VotePage() {
   useEffect(() => {
     fetchData()
 
-    if (status === "waiting" || status === "voting") {
+    if (status === "waiting" || status === "voting" || status === "displaying") {
       const interval = setInterval(fetchData, 3000)
       return () => clearInterval(interval)
     }
@@ -114,6 +119,22 @@ export default function VotePage() {
       if (!competitionResponse.ok) throw new Error('Failed to fetch competition status')
       const competitionData = await competitionResponse.json()
 
+      const roundsResponse = await fetch('/api/rounds')
+      if (!roundsResponse.ok) throw new Error('Failed to fetch rounds data')
+      const roundsData = await roundsResponse.json()
+      setRounds(roundsData)
+
+      if (competitionData.displayingResult) {
+        setDisplayResult({
+          roundNumber: competitionData.displayRound || 0,
+          yesVotes: competitionData.displayYesVotes || 0,
+          totalVotes: competitionData.displayTotalVotes || 0,
+        })
+        setStatus("displaying")
+        setIsLoading(prev => ({ ...prev, hasData: true }))
+        return
+      }
+
       if (competitionData.ended) {
         setStatus("completed")
         toast({
@@ -124,18 +145,13 @@ export default function VotePage() {
         return
       }
 
-      const roundsResponse = await fetch('/api/rounds')
-      if (!roundsResponse.ok) throw new Error('Failed to fetch rounds data')
-      const roundsData = await roundsResponse.json()
-
-      setRounds(roundsData)
       const activeRound = roundsData.find((round: Round) => round.isActive === true)
 
       if (activeRound?.isActive) {
         // Check in-memory state first, then fall back to server cookie check
         const alreadyVotedInMemory = votedRounds.includes(activeRound.roundNumber)
         if (alreadyVotedInMemory) {
-          setStatus("waiting")
+          setStatus("completed")
           return
         }
 
@@ -148,7 +164,7 @@ export default function VotePage() {
             setVotedRounds(prev =>
               prev.includes(activeRound.roundNumber) ? prev : [...prev, activeRound.roundNumber]
             )
-            setStatus("waiting")
+            setStatus("completed")
             return
           }
         }
@@ -337,7 +353,7 @@ export default function VotePage() {
         </div>
 
 
-        <Card className="w-full max-w-md md:p-6 bg-transparent border-none relative z-10">
+        <Card className="w-full max-w-md md:p-6 bg-transparent border-none relative z-10 mt-16">
           {status === "waiting" && (
             <div className="text-center py-8">
               <div className="mt-[60%] flex flex-col items-center mb-10">
@@ -346,6 +362,16 @@ export default function VotePage() {
               <h2 className="text-2xl font-semibold text-white mb-2">
                 <span>等待投票开始</span>
                 <div className="text-2xl text-white">Waiting for voting to start</div>
+              </h2>
+            </div>
+          )}
+
+          {status === "completed" && (
+            <div className="text-center py-8">
+              <div className="mt-[60%] flex flex-col items-center mb-10" />
+              <h2 className="text-2xl font-semibold text-white mb-2">
+                <span>感谢你的投票</span>
+                <div className="text-2xl text-white">Thank you for your vote</div>
               </h2>
             </div>
           )}
@@ -408,6 +434,26 @@ export default function VotePage() {
                 <span>提交投票</span>
                 <div className="text-lg">Submit Vote</div>
               </Button>
+            </div>
+          )}
+
+          {status === "displaying" && (
+            <div className="text-center py-8 flex flex-col items-center justify-center min-h-[60vh]">
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+                <span>{rounds[displayResult.roundNumber]?.note}</span>
+              </h2>
+
+            
+              <h2 className="text-2xl font-semibold text-white">
+                <span>获得的总票数是 </span>
+              </h2>
+              <h2 className="text-2xl font-semibold text-white mb-16">
+                <span>Receive total votes of </span>
+              </h2>
+              <div className="text-[10rem] md:text-[14rem] font-bold text-[#FFB6C1] leading-none mb-6">
+                {displayResult.totalVotes}
+              </div>
+
             </div>
           )}
 

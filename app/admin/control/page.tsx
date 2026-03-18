@@ -295,6 +295,8 @@ export default function ControlPage() {
 
   const startVoting = async () => {
     try {
+      await fetch("/api/display-result", { method: "DELETE" })
+
       const response = await fetch("/api/rounds", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -432,6 +434,49 @@ export default function ControlPage() {
     } catch (error) {
       console.error("Error resetting votes:", error)
       toast({ title: "Error", description: "Failed to reset votes", variant: "destructive" })
+    }
+  }
+
+  const sendResult = async () => {
+    const optionA = rounds[currentRound]?.options?.[0] || ""
+    const optionB = rounds[currentRound]?.options?.[1] || ""
+    const yesIndex = optionA.toLowerCase() === "yes" ? 0 : optionB.toLowerCase() === "yes" ? 1 : 0
+    const yesVotes = votes[currentRound]?.[yesIndex] || 0
+    const totalVotes = (votes[currentRound]?.[0] || 0) + (votes[currentRound]?.[1] || 0)
+
+    try {
+      const response = await fetch("/api/display-result", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          roundNumber: currentRound,
+          yesVotes,
+          totalVotes,
+        }),
+      })
+
+      if (response.ok) {
+        toast({ title: "Result sent", description: "Voter screen is now displaying the result" })
+      } else {
+        toast({ title: "Error", description: "Failed to send result", variant: "destructive" })
+      }
+    } catch (error) {
+      console.error("Error sending result:", error)
+      toast({ title: "Error", description: "Failed to send result", variant: "destructive" })
+    }
+  }
+
+  const hideResult = async () => {
+    try {
+      const response = await fetch("/api/display-result", { method: "DELETE" })
+      if (response.ok) {
+        toast({ title: "Result hidden", description: "Voter screen returned to normal flow" })
+      } else {
+        toast({ title: "Error", description: "Failed to hide result", variant: "destructive" })
+      }
+    } catch (error) {
+      console.error("Error hiding result:", error)
+      toast({ title: "Error", description: "Failed to hide result", variant: "destructive" })
     }
   }
 
@@ -597,6 +642,23 @@ export default function ControlPage() {
                   disabled={isVotingActive}
                 >
                   Reset All Votes
+                </Button>
+
+                <Button
+                  onClick={sendResult}
+                  className="w-full bg-[#FFB6C1] hover:bg-[#FFB6C1]/80 text-black font-semibold"
+                  disabled={isVotingActive}
+                >
+                  Send Result
+                </Button>
+
+                <Button
+                  onClick={hideResult}
+                  variant="ghost"
+                  size="sm"
+                  className="w-full text-white/60 hover:text-white hover:bg-white/10"
+                >
+                  Hide Result
                 </Button>
               </CardContent>
             </Card>

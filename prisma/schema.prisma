@@ -49,6 +49,10 @@ model Competition {
   id           Int      @id @default(autoincrement())
   isActive     Boolean  @default(true)
   voteSession  String   @default("")
+  displayingResult Boolean @default(false)
+  displayRound   Int      @default(0)
+  displayYesVotes Int     @default(0)
+  displayTotalVotes Int   @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
