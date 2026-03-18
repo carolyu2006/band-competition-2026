@@ -68,9 +68,21 @@ export default function VotePage() {
 
   // Ref so the timer callback always sees the latest selectedOption
   const selectedOptionRef = useRef<number | null>(null)
+  const currentRoundRef = useRef(currentRound)
+  const statusRef = useRef(status)
+  const votedRoundsRef = useRef<number[]>(votedRounds)
   useEffect(() => {
     selectedOptionRef.current = selectedOption
   }, [selectedOption])
+  useEffect(() => {
+    currentRoundRef.current = currentRound
+  }, [currentRound])
+  useEffect(() => {
+    statusRef.current = status
+  }, [status])
+  useEffect(() => {
+    votedRoundsRef.current = votedRounds
+  }, [votedRounds])
 
   const { toast } = useToast()
 
@@ -146,7 +158,7 @@ export default function VotePage() {
 
       if (activeRound?.isActive) {
         // Check in-memory state first, then fall back to server cookie check
-        const alreadyVotedInMemory = votedRounds.includes(activeRound.roundNumber)
+        const alreadyVotedInMemory = votedRoundsRef.current.includes(activeRound.roundNumber)
         if (alreadyVotedInMemory) {
           setStatus("completed")
           return
@@ -173,7 +185,7 @@ export default function VotePage() {
         }
 
         // New round started — set time once and begin voting
-        if (activeRound.roundNumber !== currentRound) {
+        if (activeRound.roundNumber !== currentRoundRef.current) {
           setCurrentRound(activeRound.roundNumber)
           setTimeLeft(activeRound.timeLeft)
           setInitialTime(activeRound.timeLeft)
@@ -183,7 +195,7 @@ export default function VotePage() {
         }
 
         // Same round, already voting — don't overwrite the local countdown
-        if (status === "waiting") {
+        if (statusRef.current === "waiting") {
           setTimeLeft(activeRound.timeLeft)
           setInitialTime(activeRound.timeLeft)
           setStatus("voting")
