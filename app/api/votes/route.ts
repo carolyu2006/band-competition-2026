@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { PrismaClient } from '@prisma/client';
+import { generateUUID } from '@/lib/uuid';
 
 const prisma = new PrismaClient();
 
@@ -107,7 +108,7 @@ export async function DELETE() {
     });
 
     // Rotate session token so all existing vote cookies are invalidated
-    const newSession = crypto.randomUUID();
+    const newSession = generateUUID();
     await prisma.$executeRaw`UPDATE "Competition" SET "voteSession" = ${newSession}, "updatedAt" = CURRENT_TIMESTAMP`;
     
     return NextResponse.json({ message: 'All votes cleared and session rotated' });

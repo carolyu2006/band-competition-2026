@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { generateUUID } from '@/lib/uuid';
 
 const prisma = new PrismaClient();
 
@@ -18,7 +19,7 @@ export async function POST() {
     });
 
     // Rotate session token so all existing vote cookies are invalidated
-    const newSession = crypto.randomUUID();
+    const newSession = generateUUID();
     await prisma.$executeRaw`UPDATE "Competition" SET "voteSession" = ${newSession}, "updatedAt" = CURRENT_TIMESTAMP`;
     
     return NextResponse.json({ 
