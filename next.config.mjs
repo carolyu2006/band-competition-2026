@@ -21,9 +21,9 @@ const nextConfig = {
   distDir: '.next',
   generateBuildId: async () => 'build',
   experimental: {
-    webpackBuildWorker: true,
-    parallelServerBuildTraces: true,
-    parallelServerCompiles: true,
+    webpackBuildWorker: false,
+    parallelServerBuildTraces: false,
+    parallelServerCompiles: false,
   }
 }
 
