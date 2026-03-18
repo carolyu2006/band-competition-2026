@@ -38,8 +38,9 @@ export async function POST(request: Request) {
     const cookieName = `hasVoted_round_${roundId}`;
     const existingCookie = cookieStore.get(cookieName);
 
-    // Cookie is valid only if it matches the current session token
-    if (existingCookie && existingCookie.value === sessionToken && sessionToken !== '') {
+    // Cookie is valid if it matches the current session token (or fallback 'voted' value)
+    const expectedValue = sessionToken || 'voted';
+    if (existingCookie && existingCookie.value === expectedValue) {
       return NextResponse.json(
         { error: 'Already voted in this round on this device' },
         { status: 400 }
@@ -61,10 +62,10 @@ export async function POST(request: Request) {
     
     const response = NextResponse.json(vote);
 
-    response.cookies.set(cookieName, sessionToken, {
+    response.cookies.set(cookieName, sessionToken || 'voted', {
       httpOnly: true,
       sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      secure: false,
       maxAge: 60 * 60 * 24 * 7
     });
 

@@ -20,7 +20,8 @@ export async function GET(request: NextRequest) {
   const cookie = cookieStore.get(cookieName);
 
   // Only treat as voted if cookie exists AND matches the current session
-  const hasVoted = !!cookie && cookie.value === sessionToken && sessionToken !== '';
+  const expectedValue = sessionToken || 'voted';
+  const hasVoted = !!cookie && cookie.value === expectedValue;
 
   return NextResponse.json({ hasVoted });
 }
