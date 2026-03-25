@@ -31,91 +31,61 @@ export default function ControlPage() {
   const [rounds, setRounds] = useState<Round[]>([
     {
       roundNumber: 0,
-      title: "午夜分贝 MIDNIGHT DECIBEL",
-      subtitle1: "二选一•Choose One",
-      question: "你更喜欢谁的演出？\nWhich performance do you prefer?",
-      options: ["余温乐队 Yuwen", "Moonlight"],
+      title: "午夜分贝\nMIDNIGHT DECIBEL",
+      subtitle1: "二选一\nChoose One",
+      question: "给现在或未来的自己唱什么?\nWhat would you sing to your present or future self?",
+      options: ["Nihiloom", "Drifter Corp"],
       note: "你的选择将关乎乐队是否能在第二轮演奏，请谨慎考虑！\nYour vote determines whether a band advances to Round 2-choose wisely!",
       isActive: false,
       timeLeft: 0,
     },
     {
       roundNumber: 1,
-      title: "午夜分贝 MIDNIGHT DECIBEL",
-      subtitle1: "二选一•Choose One",
-      question: "你更喜欢谁的演出？\nWhich performance do you prefer?",
-      options: ["蓝色渐进 Asym-bLu", "Accord"],
+      title: "午夜分贝\nMIDNIGHT DECIBEL",
+      subtitle1: "二选一\nChoose One",
+      question: "世界明天毁灭你会唱什么?\nWhat would you sing if the world ends tomorrow?",
+      options: ["CHICHICHI", "Moonlight"],
       note: "你的选择将关乎乐队是否能在第二轮演奏，请谨慎考虑！\nYour vote determines whether a band advances to Round 2-choose wisely!",
       isActive: false,
       timeLeft: 0,
     },
     {
       roundNumber: 2,
-      title: "午夜分贝 MIDNIGHT DECIBEL",
-      subtitle1: "二选一•Choose One",
-      question: "你更喜欢谁的演出？\nWhich performance do you prefer?",
-      options: ["余温乐队 Yuwen", "蓝色渐进 Asym-bLu"],
+      title: "午夜分贝\nMIDNIGHT DECIBEL",
+      subtitle1: "二选一\nChoose One",
+      question: "台下全是前任你会唱什么?\nWhat would you sing if all your exes were in the audience?",
+      options: ["S!mons", "余温\nLume"],
       note: "你的选择将关乎乐队是否能在第二轮演奏，请谨慎考虑！\nYour vote determines whether a band advances to Round 2-choose wisely!",
       isActive: false,
       timeLeft: 0,
     },
     {
       roundNumber: 3,
-      title: "午夜分贝 MIDNIGHT DECIBEL",
-      subtitle1: "二选一•Choose One",
-      question: "你更喜欢谁的演出？\nWhich performance do you prefer?",
-      options: ["Moonlight", "Accord"],
-      note: "你的选择将关乎乐队是否能在第二轮演奏，请谨慎考虑！\nYour vote determines whether a band advances to Round 2-choose wisely!",
+      title: "终章审判\nFINAL JUDGEMENT",
+      subtitle1: "你的一票决定今夜王座归属\nYour vote decides tonight's throne!",
+      question: "你是否要为这支乐队投上一票？\nDo you want to vote for this band?",
+      options: ["为这支乐队投票\nVote for this band"],
+      note: "乐队A",
       isActive: false,
       timeLeft: 0,
     },
     {
       roundNumber: 4,
-      title: "午夜分贝 MIDNIGHT DECIBEL",
-      subtitle1: "二选一•Choose One",
-      question: "你更喜欢谁的演出？\nWhich performance do you prefer?",
-      options: ["余温乐队 Yuwen", "Accord"],
-      note: "你的选择将关乎乐队是否能在第二轮演奏，请谨慎考虑！\nYour vote determines whether a band advances to Round 2-choose wisely!",
+      title: "终章审判\nFINAL JUDGEMENT",
+      subtitle1: "你的一票决定今夜王座归属\nYour vote decides tonight's throne!",
+      question: "你是否要为这支乐队投上一票？\nDo you want to vote for this band?",
+      options: ["为这支乐队投票\nVote for this band"],
+      note: "乐队B",
       isActive: false,
       timeLeft: 0,
     },
     {
       roundNumber: 5,
-      title: "午夜分贝 MIDNIGHT DECIBEL",
-      subtitle1: "二选一•Choose One",
-      question: "你更喜欢谁的演出？\nWhich performance do you prefer?",
-      options: ["Moonlight", "蓝色渐进 Asym-bLu"],
-      note: "你的选择将关乎乐队是否能在第二轮演奏，请谨慎考虑！\nYour vote determines whether a band advances to Round 2-choose wisely!",
-      isActive: false,
-      timeLeft: 0,
-    },
-    {
-      roundNumber: 6,
-      title: "终章审判 FINAL JUDGEMENT",
-      subtitle1: "你的YES or NO决定今夜王座归属\nYour YES or NO Decides Tonight's Throne！",
-      question: "你是否要为乐队投上一票？\nDo you want to vote for the band?",
-      options: ["Yes", "No"],
-      note: "",
-      isActive: false,
-      timeLeft: 0,
-    },
-    {
-      roundNumber: 7,
-      title: "终章审判 FINAL JUDGEMENT",
-      subtitle1: "你的YES or NO决定今夜王座归属\nYour YES or NO Decides Tonight's Throne！",
-      question: "你是否要为乐队投上一票？\nDo you want to vote for the band?",
-      options: ["Yes", "No"],
-      note: "",
-      isActive: false,
-      timeLeft: 0,
-    },
-    {
-      roundNumber: 8,
-      title: "终章审判 FINAL JUDGEMENT",
-      subtitle1: "你的YES or NO决定今夜王座归属\nYour YES or NO Decides Tonight's Throne！",
-      question: "你是否要为乐队投上一票？\nDo you want to vote for the band?",
-      options: ["Yes", "No"],
-      note: "",
+      title: "终章审判\nFINAL JUDGEMENT",
+      subtitle1: "你的一票决定今夜王座归属\nYour vote decides tonight's throne!",
+      question: "你是否要为这支乐队投上一票？\nDo you want to vote for this band?",
+      options: ["为这支乐队投票\nVote for this band"],
+      note: "乐队C",
       isActive: false,
       timeLeft: 0,
     },
@@ -138,91 +108,61 @@ export default function ControlPage() {
             const defaultRounds = [
               {
                 roundNumber: 0,
-                title: "午夜分贝 MIDNIGHT DECIBEL",
-                subtitle1: "二选一•Choose One",
-                question: "你更喜欢谁的演出？\nWhich performance do you prefer?",
-                options: ["余温乐队 Yuwen", "Moonlight"],
+                title: "午夜分贝\nMIDNIGHT DECIBEL",
+                subtitle1: "二选一\nChoose One",
+                question: "给现在或未来的自己唱什么?\nWhat would you sing to your present or future self?",
+                options: ["Nihiloom", "Drifter Corp"],
                 note: "你的选择将关乎乐队是否能在第二轮演奏，请谨慎考虑！\nYour vote determines whether a band advances to Round 2-choose wisely!",
                 isActive: false,
                 timeLeft: 0,
               },
               {
                 roundNumber: 1,
-                title: "午夜分贝 MIDNIGHT DECIBEL",
-                subtitle1: "二选一•Choose One",
-                question: "你更喜欢谁的演出？\nWhich performance do you prefer?",
-                options: ["蓝色渐进 Asym-bLu", "Accord"],
+                title: "午夜分贝\nMIDNIGHT DECIBEL",
+                subtitle1: "二选一\nChoose One",
+                question: "世界明天毁灭你会唱什么?\nWhat would you sing if the world ends tomorrow?",
+                options: ["CHICHICHI", "Moonlight"],
                 note: "你的选择将关乎乐队是否能在第二轮演奏，请谨慎考虑！\nYour vote determines whether a band advances to Round 2-choose wisely!",
                 isActive: false,
                 timeLeft: 0,
               },
               {
                 roundNumber: 2,
-                title: "午夜分贝 MIDNIGHT DECIBEL",
-                subtitle1: "二选一•Choose One",
-                question: "你更喜欢谁的演出？\nWhich performance do you prefer?",
-                options: ["余温乐队 Yuwen", "蓝色渐进 Asym-bLu"],
+                title: "午夜分贝\nMIDNIGHT DECIBEL",
+                subtitle1: "二选一\nChoose One",
+                question: "台下全是前任你会唱什么?\nWhat would you sing if all your exes were in the audience?",
+                options: ["S!mons", "余温\nLume"],
                 note: "你的选择将关乎乐队是否能在第二轮演奏，请谨慎考虑！\nYour vote determines whether a band advances to Round 2-choose wisely!",
                 isActive: false,
                 timeLeft: 0,
               },
               {
                 roundNumber: 3,
-                title: "午夜分贝 MIDNIGHT DECIBEL",
-                subtitle1: "二选一•Choose One",
-                question: "你更喜欢谁的演出？\nWhich performance do you prefer?",
-                options: ["Moonlight", "Accord"],
-                note: "你的选择将关乎乐队是否能在第二轮演奏，请谨慎考虑！\nYour vote determines whether a band advances to Round 2-choose wisely!",
+                title: "终章审判\nFINAL JUDGEMENT",
+                subtitle1: "你的一票决定今夜王座归属\nYour vote decides tonight's throne!",
+                question: "你是否要为这支乐队投上一票？\nDo you want to vote for this band?",
+                options: ["为这支乐队投票\nVote for this band"],
+                note: "乐队A",
                 isActive: false,
                 timeLeft: 0,
               },
               {
                 roundNumber: 4,
-                title: "午夜分贝 MIDNIGHT DECIBEL",
-                subtitle1: "二选一•Choose One",
-                question: "你更喜欢谁的演出？\nWhich performance do you prefer?",
-                options: ["余温乐队 Yuwen", "Accord"],
-                note: "你的选择将关乎乐队是否能在第二轮演奏，请谨慎考虑！\nYour vote determines whether a band advances to Round 2-choose wisely!",
+                title: "终章审判\nFINAL JUDGEMENT",
+                subtitle1: "你的一票决定今夜王座归属\nYour vote decides tonight's throne!",
+                question: "你是否要为这支乐队投上一票？\nDo you want to vote for this band?",
+                options: ["为这支乐队投票\nVote for this band"],
+                note: "乐队B",
                 isActive: false,
                 timeLeft: 0,
               },
               {
                 roundNumber: 5,
-                title: "午夜分贝 MIDNIGHT DECIBEL",
-                subtitle1: "二选一•Choose One",
-                question: "你更喜欢谁的演出？\nWhich performance do you prefer?",
-                options: ["Moonlight", "蓝色渐进 Asym-bLu"],
-                note: "你的选择将关乎乐队是否能在第二轮演奏，请谨慎考虑！\nYour vote determines whether a band advances to Round 2-choose wisely!",
-                isActive: false,
-                timeLeft: 0,
-              },
-              {
-                roundNumber: 6,
-                title: "终章审判 FINAL JUDGEMENT",
-                subtitle1: "你的YES or NO决定今夜王座归属\nYour YES or NO Decides Tonight's Throne！",
-                question: "你是否要为乐队投上一票？\nDo you want to vote for the band?",
-                options: ["Yes", "No"],
-                note: "",
-                isActive: false,
-                timeLeft: 0,
-              },
-              {
-                roundNumber: 7,
-                title: "终章审判 FINAL JUDGEMENT",
-                subtitle1: "你的YES or NO决定今夜王座归属\nYour YES or NO Decides Tonight's Throne！",
-                question: "你是否要为乐队投上一票？\nDo you want to vote for the band?",
-                options: ["Yes", "No"],
-                note: "",
-                isActive: false,
-                timeLeft: 0,
-              },
-              {
-                roundNumber: 8,
-                title: "终章审判 FINAL JUDGEMENT",
-                subtitle1: "你的YES or NO决定今夜王座归属\nYour YES or NO Decides Tonight's Throne！",
-                question: "你是否要为乐队投上一票？\nDo you want to vote for the band?",
-                options: ["Yes", "No"],
-                note: "",
+                title: "终章审判\nFINAL JUDGEMENT",
+                subtitle1: "你的一票决定今夜王座归属\nYour vote decides tonight's throne!",
+                question: "你是否要为这支乐队投上一票？\nDo you want to vote for this band?",
+                options: ["为这支乐队投票\nVote for this band"],
+                note: "乐队C",
                 isActive: false,
                 timeLeft: 0,
               },
@@ -248,8 +188,8 @@ export default function ControlPage() {
 
     const fetchVotesFromAPI = async () => {
       try {
-        const votesArray: number[][] = Array.from({ length: 9 }, () => [0, 0])
-        for (let roundId = 0; roundId < 9; roundId++) {
+        const votesArray: number[][] = Array.from({ length: 6 }, () => [0, 0])
+        for (let roundId = 0; roundId < 6; roundId++) {
           const response = await fetch(`/api/votes/${roundId}`)
           if (response.ok) {
             const data = await response.json()
@@ -349,7 +289,7 @@ export default function ControlPage() {
       toast({ title: "Cannot change round", description: "End voting first", variant: "destructive" })
       return
     }
-    if (currentRound < 8) {
+    if (currentRound < 5) {
       setCurrentRound(currentRound + 1)
     }
   }
@@ -484,8 +424,8 @@ export default function ControlPage() {
   useEffect(() => {
     const fetchVotesFromAPI = async () => {
       try {
-        const votesArray: number[][] = Array.from({ length: 9 }, () => [0, 0])
-        for (let roundId = 0; roundId < 9; roundId++) {
+        const votesArray: number[][] = Array.from({ length: 6 }, () => [0, 0])
+        for (let roundId = 0; roundId < 6; roundId++) {
           const response = await fetch(`/api/votes/${roundId}`)
           if (response.ok) {
             const data = await response.json()
@@ -581,7 +521,7 @@ export default function ControlPage() {
                   fetch("/api/reset", { method: "POST" })
                     .then((response) => {
                       if (response.ok) {
-                        setVotes(Array.from({ length: 9 }, () => [0, 0]))
+                        setVotes(Array.from({ length: 6 }, () => [0, 0]))
                         toast({ title: "Reset complete", description: "All data has been reset" })
                       }
                     })
@@ -764,15 +704,17 @@ export default function ControlPage() {
                     disabled={isVotingActive}
                   />
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-white/40 mb-1">Option B</label>
-                  <Input
-                    value={rounds[currentRound].options[1]}
-                    onChange={(e) => updateOption(currentRound, 1, e.target.value)}
-                    className="bg-white/5 border-white/10 text-white"
-                    disabled={isVotingActive}
-                  />
-                </div>
+                {rounds[currentRound].options.length > 1 && (
+                  <div>
+                    <label className="block text-xs font-medium text-white/40 mb-1">Option B</label>
+                    <Input
+                      value={rounds[currentRound].options[1]}
+                      onChange={(e) => updateOption(currentRound, 1, e.target.value)}
+                      className="bg-white/5 border-white/10 text-white"
+                      disabled={isVotingActive}
+                    />
+                  </div>
+                )}
               </div>
 
               <div>

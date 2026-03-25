@@ -71,6 +71,7 @@ export default function VotePage() {
   const currentRoundRef = useRef(currentRound)
   const statusRef = useRef(status)
   const votedRoundsRef = useRef<number[]>(votedRounds)
+  const roundsRef = useRef<Round[]>(rounds)
   useEffect(() => {
     selectedOptionRef.current = selectedOption
   }, [selectedOption])
@@ -83,6 +84,9 @@ export default function VotePage() {
   useEffect(() => {
     votedRoundsRef.current = votedRounds
   }, [votedRounds])
+  useEffect(() => {
+    roundsRef.current = rounds
+  }, [rounds])
 
   const { toast } = useToast()
 
@@ -105,12 +109,19 @@ export default function VotePage() {
           if (selectedOptionRef.current !== null) {
             handleSubmit()
           } else {
+            const roundOptions = roundsRef.current[currentRoundRef.current]?.options
+            const isSingleButton = roundOptions?.length === 1
+            if (isSingleButton) {
+              // They chose not to vote — silently mark as participated
+              setVotedRounds(prev => [...prev, currentRoundRef.current])
+            } else {
+              toast({
+                title: "Time's up!",
+                description: "You didn't select an option in time",
+                variant: "destructive",
+              })
+            }
             setStatus("waiting")
-            toast({
-              title: "Time's up!",
-              description: "You didn't select an option in time",
-              variant: "destructive",
-            })
           }
           return 0
         }
@@ -222,8 +233,9 @@ export default function VotePage() {
     }
   }
 
-  const handleSubmit = async () => {
-    if (selectedOption === null) {
+  const handleSubmit = async (optionOverride?: number) => {
+    const option = optionOverride !== undefined ? optionOverride : selectedOption
+    if (option === null) {
       toast({
         title: "未选择选项",
         description: "请在提交前选择一个选项",
@@ -238,7 +250,7 @@ export default function VotePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           roundId: currentRound,
-          optionIndex: selectedOption,
+          optionIndex: option,
           title: rounds[currentRound].title,
           subtitle1: rounds[currentRound].subtitle1,
           note: rounds[currentRound].note
@@ -388,7 +400,7 @@ export default function VotePage() {
           {status === "voting" && (
             <div className="space-y-6">
               <div className="mt-12 relative w-full px-8 h-[150px] flex items-center">
-                <h2 className="absolute left-0 text-5xl font-bold text-white">
+                <h2 className="absolute left-0 text-5xl font-bold text-white whitespace-pre-line">
                   <span>{rounds[currentRound]?.title || ""}</span>
                 </h2>
                 <div className="absolute right-[-40px] bg-transparent rounded-lg p-3">
@@ -397,52 +409,71 @@ export default function VotePage() {
               </div>
 
               <div className="mb-2">
-                <h2 className="text-xl font-semibold text-white text-center">
+                <h2 className="text-xl font-semibold text-white text-center whitespace-pre-line">
                   <div className="text-white">{rounds[currentRound]?.subtitle1 || ""}</div>
                 </h2>
 
-                <div className="mb-2">
-                  <h3 className="text-md font-normal text-white text-center">
+                <div className="mt-3 mb-4">
+                  <h3 className="text-2xl font-bold text-white text-center whitespace-pre-line">
                     <span>{rounds[currentRound]?.question || ""}</span>
                   </h3>
                 </div>
 
-                <div className="mt-2 bg-transparent rounded-lg mb-2">
-                  <div className="text-4xl text-center font-bold text-white">
-                    <span>{rounds[currentRound].note}</span>
-                  </div>
-                </div>
-
                 {/* Options */}
-                <div className="space-y-3 mt-10 mb-8 font-bold">
-                  <div className="flex justify-center space-x-8">
-                    {rounds[currentRound]?.options?.map((option, index) => (
-                      <div
-                        key={index}
-                        className={`flex flex-col items-center cursor-pointer transition-all duration-300 ${selectedOption === index ? "scale-150" : "scale-52"
-                          }`}
-                        onClick={() => setSelectedOption(index)}
-                      >
-                        <div className={`w-24 h-24 rounded-full border-8 flex items-center justify-center transition-all duration-300 border-transparent ${selectedOption === index ? "bg-white" : "bg-white/70"}`}>
-
-                          <span className="text-black text-center text-lg px-4">{option}</span>
-                        </div>
+                {rounds[currentRound]?.options?.length === 1 ? (
+                  /* Single-button round: one button, click = instant vote */
+                  <div className="flex flex-col items-center mt-14 mb-4">
+                    <div
+                      className="flex flex-col items-center cursor-pointer active:scale-95"
+                      onClick={() => handleSubmit(0)}
+                    >
+                      <div className="w-44 h-44 rounded-full border-8 border-transparent bg-white flex items-center justify-center animate-breathe">
+                        <span className="text-black text-center text-base font-bold px-6 leading-snug whitespace-pre-line">
+                          {rounds[currentRound].options[0]}
+                        </span>
                       </div>
-                    ))}
+                    </div>
+                    <p className="text-white/50 text-sm text-center mt-6">
+                      <span>按下即投票，不按则跳过</span>
+                      <div>Press to vote, or skip by waiting</div>
+                    </p>
                   </div>
-                </div>
+                ) : (
+                  /* Two-option round: select then submit */
+                  <>
+                    <div className="space-y-3 mt-14 mb-10 font-bold">
+                      <div className="flex justify-center space-x-8">
+                        {rounds[currentRound]?.options?.map((option, index) => (
+                          <div
+                            key={index}
+                            className={`flex flex-col items-center cursor-pointer transition-all duration-300 ${selectedOption === index ? "scale-150" : "scale-52"}`}
+                            onClick={() => setSelectedOption(index)}
+                          >
+                            <div className={`w-32 h-32 rounded-full border-8 flex items-center justify-center transition-all duration-300 border-transparent ${selectedOption === index ? "bg-white" : "bg-white/70"}`}>
+                              <span className="text-black text-center text-lg px-4 whitespace-pre-line">{option}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
 
+                    <Button
+                      onClick={() => handleSubmit()}
+                      className="w-full bg-[#FFB6C1] hover:bg-[#FFB6C1]/80 text-black text-lg font-bold py-6"
+                      disabled={selectedOption === null || status !== "voting"}
+                    >
+                      <span>提交投票</span>
+                      <div className="text-lg">Submit Vote</div>
+                    </Button>
 
+                    {rounds[currentRound]?.note ? (
+                      <div className="mt-4 text-white/40 text-xs text-center whitespace-pre-line">
+                        {rounds[currentRound].note}
+                      </div>
+                    ) : null}
+                  </>
+                )}
               </div>
-
-              <Button
-                onClick={handleSubmit}
-                className="w-full bg-[#FFB6C1] hover:bg-[#FFB6C1]/80 text-black text-lg font-bold py-6"
-                disabled={selectedOption === null || status !== "voting"}
-              >
-                <span>提交投票</span>
-                <div className="text-lg">Submit Vote</div>
-              </Button>
             </div>
           )}
 

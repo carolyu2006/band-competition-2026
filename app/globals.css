@@ -49,5 +49,6 @@
 
 body {
   @apply bg-black text-white;
+  font-family: Helvetica, Arial, sans-serif;
 }
 
