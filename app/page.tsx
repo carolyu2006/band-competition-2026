@@ -2,7 +2,6 @@
 
 import type React from "react"
 import { useState, useEffect, useRef } from "react"
-import Head from 'next/head'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
@@ -62,10 +61,6 @@ export default function VotePage() {
   const [selectedOption, setSelectedOption] = useState<number | null>(null)
   const [votedRounds, setVotedRounds] = useState<number[]>([])
 
-  // Timer state
-  const [timeLeft, setTimeLeft] = useState(0)
-  const [initialTime, setInitialTime] = useState(0)
-
   // Ref so the timer callback always sees the latest selectedOption
   const selectedOptionRef = useRef<number | null>(null)
   const currentRoundRef = useRef(currentRound)
@@ -96,41 +91,6 @@ export default function VotePage() {
     const interval = setInterval(fetchData, 1000)
     return () => clearInterval(interval)
   }, [])
-
-  // Timer effect — only start/stop when status changes to/from "voting"
-  useEffect(() => {
-    if (status !== "voting") return
-
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          clearInterval(timer)
-          // Use ref to avoid stale closure
-          if (selectedOptionRef.current !== null) {
-            handleSubmit()
-          } else {
-            const roundOptions = roundsRef.current[currentRoundRef.current]?.options
-            const isSingleButton = roundOptions?.length === 1
-            if (isSingleButton) {
-              // They chose not to vote — silently mark as participated
-              setVotedRounds(prev => [...prev, currentRoundRef.current])
-            } else {
-              toast({
-                title: "Time's up!",
-                description: "You didn't select an option in time",
-                variant: "destructive",
-              })
-            }
-            setStatus("waiting")
-          }
-          return 0
-        }
-        return prev - 1
-      })
-    }, 1000)
-
-    return () => clearInterval(timer)
-  }, [status])
 
   // Fetch competition and rounds data
   const fetchData = async () => {
@@ -189,26 +149,22 @@ export default function VotePage() {
           }
         }
 
-        // Don't enter voting if no time left
+        // Don't enter voting if admin hasn't opened it
         if (!activeRound.timeLeft || activeRound.timeLeft <= 0) {
           setStatus("waiting")
           return
         }
 
-        // New round started — set time once and begin voting
+        // New round started — begin voting
         if (activeRound.roundNumber !== currentRoundRef.current) {
           setCurrentRound(activeRound.roundNumber)
-          setTimeLeft(activeRound.timeLeft)
-          setInitialTime(activeRound.timeLeft)
           setStatus("voting")
           setSelectedOption(null)
           return
         }
 
-        // Same round, already voting — don't overwrite the local countdown
+        // Same round, already voting
         if (statusRef.current === "waiting") {
-          setTimeLeft(activeRound.timeLeft)
-          setInitialTime(activeRound.timeLeft)
           setStatus("voting")
         }
       } else {
@@ -327,11 +283,6 @@ export default function VotePage() {
   if (isLoading.initial || isLoading.data || !isLoading.hasData) {
     return (
       <>
-        <Head>
-          <title>午夜分贝 MIDNIGHT DECIBEL | NYU CSSA</title>
-          <link rel="icon" href="/cssa logo.png" />
-        </Head>
-
         <div className="h-screen flex flex-col items-center justify-center p-4 relative">
           <AnimatedCircle />
           <Card className="w-full max-w-md p-4 md:p-6 bg-transparent border-none relative z-10">
@@ -353,11 +304,6 @@ export default function VotePage() {
   // Main content
   return (
     <>
-      <Head>
-        <title>午夜分贝 MIDNIGHT DECIBEL | NYU CSSA</title>
-        <link rel="icon" href="/cssa-logo.png" />
-      </Head>
-
       <div className="w-screen flex flex-col items-center justify-center p-8 relative overflow-hidden">
 
         <AnimatedCircle />
@@ -403,15 +349,14 @@ export default function VotePage() {
                 <h2 className="absolute left-0 text-5xl font-bold text-white whitespace-pre-line">
                   <span>{rounds[currentRound]?.title || ""}</span>
                 </h2>
-                <div className="absolute right-[-40px] bg-transparent rounded-lg p-3">
-                  <div className="text-[200px] font-bold text-white/40 leading-none">{timeLeft}</div>
-                </div>
               </div>
 
               <div className="mb-2">
-                <h2 className="text-xl font-semibold text-white text-center whitespace-pre-line">
-                  <div className="text-white">{rounds[currentRound]?.subtitle1 || ""}</div>
-                </h2>
+                {currentRound < 3 && (
+                  <h2 className="text-xl font-semibold text-white text-center whitespace-pre-line">
+                    <div className="text-white">{rounds[currentRound]?.subtitle1 || ""}</div>
+                  </h2>
+                )}
 
                 <div className="mt-3 mb-4">
                   <h3 className="text-2xl font-bold text-white text-center whitespace-pre-line">
@@ -427,7 +372,7 @@ export default function VotePage() {
                       className="flex flex-col items-center cursor-pointer active:scale-95"
                       onClick={() => handleSubmit(0)}
                     >
-                      <div className="w-44 h-44 rounded-full border-8 border-transparent bg-white flex items-center justify-center animate-breathe">
+                      <div className={`w-44 h-44 rounded-full border-8 border-transparent flex items-center justify-center animate-breathe ${currentRound >= 3 ? "bg-[#FFB6C1]" : "bg-white"}`}>
                         <span className="text-black text-center text-base font-bold px-6 leading-snug whitespace-pre-line">
                           {rounds[currentRound].options[0]}
                         </span>
@@ -479,20 +424,46 @@ export default function VotePage() {
 
           {status === "displaying" && (
             <div className="text-center py-8 flex flex-col items-center justify-center min-h-[60vh]">
-              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-                <span>{rounds[displayResult.roundNumber]?.note}</span>
-              </h2>
+              {displayResult.roundNumber >= 3 && (
+                <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+                  <span>{rounds[displayResult.roundNumber]?.note}</span>
+                </h2>
+              )}
 
-            
-              <h2 className="text-2xl font-semibold text-white">
-                <span>获得的总票数是 </span>
-              </h2>
-              <h2 className="text-2xl font-semibold text-white mb-16">
-                <span>Receive total votes of </span>
-              </h2>
-              <div className="text-[10rem] md:text-[14rem] font-bold text-[#FFB6C1] leading-none mb-6">
-                {displayResult.totalVotes}
-              </div>
+              {displayResult.roundNumber < 3 ? (() => {
+                const optionAVotes = displayResult.yesVotes
+                const optionBVotes = displayResult.totalVotes - displayResult.yesVotes
+                const winnerIndex = optionAVotes >= optionBVotes ? 0 : 1
+                const winnerName = rounds[displayResult.roundNumber]?.options?.[winnerIndex] || ""
+                return (
+                  <>
+                    <h3 className="text-2xl font-bold text-white mb-8 whitespace-pre-line text-center">
+                      {rounds[displayResult.roundNumber]?.question}
+                    </h3>
+                    <h2 className="text-xl font-semibold text-white/70 mb-1">
+                      <span>获胜的是</span>
+                    </h2>
+                    <h2 className="text-xl font-semibold text-white/70 mb-6">
+                      <span>the winner is</span>
+                    </h2>
+                    <div className="text-[4rem] md:text-[5rem] font-bold text-[#FFB6C1] leading-none mb-6 whitespace-pre-line text-center">
+                      {winnerName}
+                    </div>
+                  </>
+                )
+              })() : (
+                <>
+                  <h2 className="text-2xl font-semibold text-white">
+                    <span>获得的总票数是 </span>
+                  </h2>
+                  <h2 className="text-2xl font-semibold text-white mb-16">
+                    <span>Receive total votes of </span>
+                  </h2>
+                  <div className="text-[10rem] md:text-[14rem] font-bold text-[#FFB6C1] leading-none mb-6">
+                    {displayResult.totalVotes}
+                  </div>
+                </>
+              )}
 
             </div>
           )}

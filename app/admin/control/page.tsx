@@ -26,8 +26,6 @@ interface Round {
 export default function ControlPage() {
   const [currentRound, setCurrentRound] = useState(0)
   const [isVotingActive, setIsVotingActive] = useState(false)
-  const [timeLeft, setTimeLeft] = useState(60)
-  const [initialTime, setInitialTime] = useState(60)
   const [rounds, setRounds] = useState<Round[]>([
     {
       roundNumber: 0,
@@ -208,31 +206,6 @@ export default function ControlPage() {
     fetchVotesFromAPI()
   }, [])
 
-  // Timer effect
-  useEffect(() => {
-    if (!isVotingActive || timeLeft <= 0) return
-
-    const timer = setTimeout(() => {
-      setTimeLeft(timeLeft - 1)
-
-      fetch("/api/rounds", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          roundNumber: currentRound,
-          isActive: isVotingActive,
-          timeLeft: timeLeft - 1,
-        }),
-      }).catch((error) => console.error("Error updating round:", error))
-
-      if (timeLeft === 1) {
-        endVoting()
-      }
-    }, 1000)
-
-    return () => clearTimeout(timer)
-  }, [timeLeft, isVotingActive, currentRound])
-
   const startVoting = async () => {
     try {
       await fetch("/api/display-result", { method: "DELETE" })
@@ -243,13 +216,12 @@ export default function ControlPage() {
         body: JSON.stringify({
           roundNumber: currentRound,
           isActive: true,
-          timeLeft: initialTime,
+          timeLeft: 99999,
         }),
       })
 
       if (response.ok) {
         setIsVotingActive(true)
-        setTimeLeft(initialTime)
         toast({ title: "Voting started", description: `Round ${currentRound + 1} is now active` })
       } else {
         toast({ title: "Error", description: "Failed to start voting", variant: "destructive" })
@@ -275,6 +247,7 @@ export default function ControlPage() {
       if (response.ok) {
         setIsVotingActive(false)
         toast({ title: "Voting ended", description: `Round ${currentRound + 1} has ended` })
+
       } else {
         toast({ title: "Error", description: "Failed to end voting", variant: "destructive" })
       }
@@ -547,21 +520,6 @@ export default function ControlPage() {
                 <CardTitle className="text-[#FFB6C1] text-lg">Voting Control</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="number"
-                    value={initialTime}
-                    onChange={(e) => setInitialTime(Number.parseInt(e.target.value) || 60)}
-                    className="bg-white/5 border-white/10 text-white flex-1"
-                    min="10"
-                    max="300"
-                    disabled={isVotingActive}
-                  />
-                  <div className="text-2xl font-bold text-white min-w-[60px] text-center font-mono">
-                    {timeLeft}s
-                  </div>
-                </div>
-
                 <div className="flex gap-2">
                   {isVotingActive ? (
                     <Button onClick={endVoting} className="flex-1 bg-red-500/80 hover:bg-red-500 text-white">
@@ -744,7 +702,7 @@ export default function ControlPage() {
                       options: rounds[currentRound].options,
                       note: rounds[currentRound].note,
                       isActive: isVotingActive,
-                      timeLeft: timeLeft,
+                      timeLeft: isVotingActive ? 99999 : 0,
                     }),
                   })
                     .then((response) => {
