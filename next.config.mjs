@@ -20,6 +20,7 @@ const nextConfig = {
   // Disable Pages Router completely
   distDir: '.next',
   generateBuildId: async () => 'build',
+  serverExternalPackages: ['qrcode.react'],
   experimental: {
     webpackBuildWorker: false,
     parallelServerBuildTraces: false,

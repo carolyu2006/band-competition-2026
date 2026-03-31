@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
-import { QRCodeSVG } from "qrcode.react"
+import dynamic from "next/dynamic"
+const QRCodeSVG = dynamic(() => import("qrcode.react").then(m => m.QRCodeSVG), { ssr: false })
 import { Textarea } from "@/components/ui/textarea"
 
 interface Round {

@@ -61,6 +61,11 @@ export default function VotePage() {
   const [selectedOption, setSelectedOption] = useState<number | null>(null)
   const [votedRounds, setVotedRounds] = useState<number[]>([])
 
+  // Derived display values
+  const isEarlyRound = displayResult.roundNumber < 3
+  const displayWinnerIndex = displayResult.yesVotes >= (displayResult.totalVotes - displayResult.yesVotes) ? 0 : 1
+  const displayWinnerName = rounds[displayResult.roundNumber]?.options?.[displayWinnerIndex] || ""
+
   // Ref so the timer callback always sees the latest selectedOption
   const selectedOptionRef = useRef<number | null>(null)
   const currentRoundRef = useRef(currentRound)
@@ -424,34 +429,30 @@ export default function VotePage() {
 
           {status === "displaying" && (
             <div className="text-center py-8 flex flex-col items-center justify-center min-h-[60vh]">
-              {displayResult.roundNumber >= 3 && (
+              {!isEarlyRound && (
                 <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
                   <span>{rounds[displayResult.roundNumber]?.note}</span>
                 </h2>
               )}
 
-              {displayResult.roundNumber < 3 ? (() => {
-                const optionAVotes = displayResult.yesVotes
-                const optionBVotes = displayResult.totalVotes - displayResult.yesVotes
-                const winnerIndex = optionAVotes >= optionBVotes ? 0 : 1
-                const winnerName = rounds[displayResult.roundNumber]?.options?.[winnerIndex] || ""
-                return (
-                  <>
-                    <h3 className="text-2xl font-bold text-white mb-8 whitespace-pre-line text-center">
-                      {rounds[displayResult.roundNumber]?.question}
-                    </h3>
-                    <h2 className="text-xl font-semibold text-white/70 mb-1">
-                      <span>获胜的是</span>
-                    </h2>
-                    <h2 className="text-xl font-semibold text-white/70 mb-6">
-                      <span>the winner is</span>
-                    </h2>
-                    <div className="text-[4rem] md:text-[5rem] font-bold text-[#FFB6C1] leading-none mb-6 whitespace-pre-line text-center">
-                      {winnerName}
-                    </div>
-                  </>
-                )
-              })() : (
+              {isEarlyRound && (
+                <>
+                  <h3 className="text-2xl font-bold text-white mb-8 whitespace-pre-line text-center">
+                    {rounds[displayResult.roundNumber]?.question}
+                  </h3>
+                  <h2 className="text-xl font-semibold text-white/70 mb-1">
+                    <span>获胜的是</span>
+                  </h2>
+                  <h2 className="text-xl font-semibold text-white/70 mb-6">
+                    <span>the winner is</span>
+                  </h2>
+                  <div className="text-[4rem] md:text-[5rem] font-bold text-[#FFB6C1] leading-none mb-6 whitespace-pre-line text-center">
+                    {displayWinnerName}
+                  </div>
+                </>
+              )}
+
+              {!isEarlyRound && (
                 <>
                   <h2 className="text-2xl font-semibold text-white">
                     <span>获得的总票数是 </span>
@@ -464,7 +465,6 @@ export default function VotePage() {
                   </div>
                 </>
               )}
-
             </div>
           )}
 
