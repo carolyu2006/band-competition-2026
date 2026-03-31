@@ -175,7 +175,6 @@ export default function VotePage() {
       } else {
         // If no active round, go to waiting state
         setStatus("waiting")
-        setTimeLeft(0)
         setSelectedOption(null)
       }
 
