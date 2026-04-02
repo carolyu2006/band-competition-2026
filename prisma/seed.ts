@@ -77,7 +77,7 @@ async function main() {
     },
     {
       roundNumber: 6,
-      title: "终章审判 FINAL JUDGEMENT",
+      title: "决赛轮 FINAL ROUND",
       subtitle1: "",
       question: "你是否要为乐队投上一票？Do you want to vote for the band?",
       options: ["Yes", "No"],
@@ -87,7 +87,7 @@ async function main() {
     },
     {
       roundNumber: 7,
-      title: "终章审判 FINAL JUDGEMENT",
+      title: "决赛轮 FINAL ROUND",
       subtitle1: "",
       question: "你是否要为乐队投上一票？Do you want to vote for the band?",
       options: ["Yes", "No"],
@@ -97,7 +97,7 @@ async function main() {
     },
     {
       roundNumber: 8,
-      title: "终章审判 FINAL JUDGEMENT",
+      title: "决赛轮 FINAL ROUND",
       subtitle1: "",
       question: "你是否要为乐队投上一票？Do you want to vote for the band?",
       options: ["Yes", "No"],

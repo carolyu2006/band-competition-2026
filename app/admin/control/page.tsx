@@ -60,31 +60,31 @@ export default function ControlPage() {
     },
     {
       roundNumber: 3,
-      title: "终章审判\nFINAL JUDGEMENT",
-      subtitle1: "你的一票决定今夜王座归属\nYour vote decides tonight's throne!",
-      question: "你是否要为这支乐队投上一票？\nDo you want to vote for this band?",
+      title: "决赛轮\nFINAL ROUND",
+      subtitle1: "你是否想为Drifter Corp.投票\nDo you want to vote for Drifter Corp.?",
+      question: "你是否想为Drifter Corp.投票\nDo you want to vote for Drifter Corp.?",
       options: ["为这支乐队投票\nVote for this band"],
-      note: "乐队A",
+      note: "Drifter Corp.",
       isActive: false,
       timeLeft: 0,
     },
     {
       roundNumber: 4,
-      title: "终章审判\nFINAL JUDGEMENT",
-      subtitle1: "你的一票决定今夜王座归属\nYour vote decides tonight's throne!",
-      question: "你是否要为这支乐队投上一票？\nDo you want to vote for this band?",
+      title: "决赛轮\nFINAL ROUND",
+      subtitle1: "你是否想为Moonlight荷塘小炒投票\nDo you want to vote for Moonlight荷塘小炒?",
+      question: "你是否想为Moonlight荷塘小炒投票\nDo you want to vote for Moonlight荷塘小炒?",
       options: ["为这支乐队投票\nVote for this band"],
-      note: "乐队B",
+      note: "Moonlight荷塘小炒",
       isActive: false,
       timeLeft: 0,
     },
     {
       roundNumber: 5,
-      title: "终章审判\nFINAL JUDGEMENT",
-      subtitle1: "你的一票决定今夜王座归属\nYour vote decides tonight's throne!",
-      question: "你是否要为这支乐队投上一票？\nDo you want to vote for this band?",
+      title: "决赛轮\nFINAL ROUND",
+      subtitle1: "你是否想为余温Lume投票\nDo you want to vote for 余温Lume?",
+      question: "你是否想为余温Lume投票\nDo you want to vote for 余温Lume?",
       options: ["为这支乐队投票\nVote for this band"],
-      note: "乐队C",
+      note: "余温Lume",
       isActive: false,
       timeLeft: 0,
     },
@@ -139,7 +139,7 @@ export default function ControlPage() {
                 roundNumber: 3,
                 title: "终章审判\nFINAL JUDGEMENT",
                 subtitle1: "你的一票决定今夜王座归属\nYour vote decides tonight's throne!",
-                question: "你是否要为这支乐队投上一票？\nDo you want to vote for this band?",
+                question: "你是否想为这支乐队投票\nDo you want to vote for this band?",
                 options: ["为这支乐队投票\nVote for this band"],
                 note: "乐队A",
                 isActive: false,
@@ -149,7 +149,7 @@ export default function ControlPage() {
                 roundNumber: 4,
                 title: "终章审判\nFINAL JUDGEMENT",
                 subtitle1: "你的一票决定今夜王座归属\nYour vote decides tonight's throne!",
-                question: "你是否要为这支乐队投上一票？\nDo you want to vote for this band?",
+                question: "你是否想为这支乐队投票\nDo you want to vote for this band?",
                 options: ["为这支乐队投票\nVote for this band"],
                 note: "乐队B",
                 isActive: false,
@@ -159,7 +159,7 @@ export default function ControlPage() {
                 roundNumber: 5,
                 title: "终章审判\nFINAL JUDGEMENT",
                 subtitle1: "你的一票决定今夜王座归属\nYour vote decides tonight's throne!",
-                question: "你是否要为这支乐队投上一票？\nDo you want to vote for this band?",
+                question: "你是否想为这支乐队投票\nDo you want to vote for this band?",
                 options: ["为这支乐队投票\nVote for this band"],
                 note: "乐队C",
                 isActive: false,
@@ -510,6 +510,26 @@ export default function ControlPage() {
               >
                 Reset All Data
               </Button>
+              <Button
+                onClick={() => {
+                  fetch("/api/rounds", { method: "PUT" })
+                    .then((response) => {
+                      if (response.ok) {
+                        window.location.reload()
+                        toast({ title: "Rounds reinitialized", description: "Round config reset to defaults" })
+                      }
+                    })
+                    .catch((error) => {
+                      console.error("Error reinitializing rounds:", error)
+                      toast({ title: "Error", description: "Failed to reinitialize rounds", variant: "destructive" })
+                    })
+                }}
+                variant="ghost"
+                size="sm"
+                className="w-full text-orange-400/50 hover:text-orange-400 hover:bg-orange-400/10 justify-start text-xs"
+              >
+                Reinitialize Round Config
+              </Button>
             </div>
           </div>
 
@@ -683,6 +703,12 @@ export default function ControlPage() {
                   onChange={(e) => {
                     const updatedRounds = [...rounds]
                     updatedRounds[currentRound].note = e.target.value
+                    if (currentRound >= 3) {
+                      const bandName = e.target.value
+                      const generated = `你是否想为${bandName}投票\nDo you want to vote for ${bandName}?`
+                      updatedRounds[currentRound].question = generated
+                      updatedRounds[currentRound].subtitle1 = generated
+                    }
                     setRounds(updatedRounds)
                   }}
                   className="bg-white/5 border-white/10 text-white min-h-[80px]"

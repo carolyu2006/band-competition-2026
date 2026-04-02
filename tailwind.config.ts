@@ -61,7 +61,7 @@ const config: Config = {
         },
         breathe: {
           "0%, 100%": { transform: "scale(1)" },
-          "50%": { transform: "scale(1.12)" },
+          "50%": { transform: "scale(1.06)" },
         },
       },
       animation: {

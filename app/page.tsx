@@ -356,17 +356,17 @@ export default function VotePage() {
               </div>
 
               <div className="mb-2">
-                {currentRound < 3 && (
-                  <h2 className="text-xl font-semibold text-white text-center whitespace-pre-line">
-                    <div className="text-white">{rounds[currentRound]?.subtitle1 || ""}</div>
-                  </h2>
-                )}
+                <h2 className="text-xl font-semibold text-white text-center whitespace-pre-line">
+                  <div className="text-white">{rounds[currentRound]?.subtitle1 || ""}</div>
+                </h2>
 
-                <div className="mt-3 mb-4">
-                  <h3 className="text-2xl font-bold text-white text-center whitespace-pre-line">
-                    <span>{rounds[currentRound]?.question || ""}</span>
-                  </h3>
-                </div>
+                {currentRound < 3 && (
+                  <div className="mt-3 mb-4">
+                    <h3 className="text-2xl font-bold text-white text-center whitespace-pre-line">
+                      <span>{rounds[currentRound]?.question || ""}</span>
+                    </h3>
+                  </div>
+                )}
 
                 {/* Options */}
                 {rounds[currentRound]?.options?.length === 1 ? (
@@ -376,8 +376,8 @@ export default function VotePage() {
                       className="flex flex-col items-center cursor-pointer active:scale-95"
                       onClick={() => handleSubmit(0)}
                     >
-                      <div className={`w-44 h-44 rounded-full border-8 border-transparent flex items-center justify-center animate-breathe ${currentRound >= 3 ? "bg-[#FFB6C1]" : "bg-white"}`}>
-                        <span className="text-black text-center text-base font-bold px-6 leading-snug whitespace-pre-line">
+                      <div className={`w-36 h-36 rounded-full border-8 border-transparent flex items-center justify-center animate-breathe ${currentRound >= 3 ? "bg-[#FFB6C1]" : "bg-white"}`}>
+                        <span className="text-black text-center text-sm font-bold px-4 leading-snug whitespace-pre-line">
                           {rounds[currentRound].options[0]}
                         </span>
                       </div>
