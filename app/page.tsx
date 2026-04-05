@@ -324,7 +324,7 @@ export default function VotePage() {
         </div>
 
 
-        <Card className="w-full max-w-md md:p-6 bg-transparent border-none relative z-10 mt-16">
+        <Card className="w-full max-w-md md:p-6 bg-transparent border-none relative z-10 mt-[calc(5vh+6.5rem)]">
           {status === "waiting" && (
             <div className="text-center py-8">
               <div className="mt-[60%] flex flex-col items-center mb-10">
@@ -348,21 +348,21 @@ export default function VotePage() {
           )}
 
           {status === "voting" && (
-            <div className="space-y-6">
-              <div className="mt-12 relative w-full px-8 h-[150px] flex items-center">
-                <h2 className="absolute left-0 text-5xl font-bold text-white whitespace-pre-line">
+            <div>
+              <div className="relative w-full px-8 h-[90px] flex items-center">
+                <h2 className="absolute left-0 text-4xl font-bold text-white whitespace-pre-line">
                   <span>{rounds[currentRound]?.title || ""}</span>
                 </h2>
               </div>
 
-              <div className="mb-2">
-                <h2 className="text-xl font-semibold text-white text-center whitespace-pre-line">
+              <div className="mt-[5vh] mb-2">
+                <h2 className="text-base font-semibold text-white text-center whitespace-pre-line">
                   <div className="text-white">{rounds[currentRound]?.subtitle1 || ""}</div>
                 </h2>
 
                 {currentRound < 3 && (
-                  <div className="mt-3 mb-4">
-                    <h3 className="text-2xl font-bold text-white text-center whitespace-pre-line">
+                  <div className="mt-2 mb-2">
+                    <h3 className="text-lg font-bold text-white text-center whitespace-pre-line">
                       <span>{rounds[currentRound]?.question || ""}</span>
                     </h3>
                   </div>
@@ -371,7 +371,7 @@ export default function VotePage() {
                 {/* Options */}
                 {rounds[currentRound]?.options?.length === 1 ? (
                   /* Single-button round: one button, click = instant vote */
-                  <div className="flex flex-col items-center mt-14 mb-4">
+                  <div className="flex flex-col items-center mt-6 mb-4">
                     <div
                       className="flex flex-col items-center cursor-pointer active:scale-95"
                       onClick={() => handleSubmit(0)}
@@ -384,13 +384,13 @@ export default function VotePage() {
                     </div>
                     <p className="text-white/50 text-sm text-center mt-6">
                       <span>按下即投票，不按则跳过</span>
-                      <div>Press to vote, or skip by waiting</div>
+                      <span className="block">Press to vote, or skip by waiting</span>
                     </p>
                   </div>
                 ) : (
                   /* Two-option round: select then submit */
                   <>
-                    <div className="space-y-3 mt-14 mb-10 font-bold">
+                    <div className="space-y-3 mt-6 mb-6 font-bold">
                       <div className="flex justify-center space-x-8">
                         {rounds[currentRound]?.options?.map((option, index) => (
                           <div
